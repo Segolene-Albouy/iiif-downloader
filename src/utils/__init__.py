@@ -1,13 +1,6 @@
 from functools import wraps
 from pathlib import Path
 
-from numpy.random import seed as np_seed
-from numpy.random import get_state as np_get_state
-from numpy.random import set_state as np_set_state
-from random import seed as rand_seed
-from random import getstate as rand_get_state
-from random import setstate as rand_set_state
-
 def coerce_to_path_and_check_exist(path):
     path = Path(path)
     if not path.exists():
