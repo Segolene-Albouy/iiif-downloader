@@ -1,14 +1,14 @@
 from functools import wraps
 from pathlib import Path
 
-def coerce_to_path_and_check_exist(path):
+def check_dir(path):
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError('{} does not exist'.format(path.absolute()))
     return path
 
 
-def coerce_to_path_and_create_dir(path):
+def create_dir(path):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=True)
     return path

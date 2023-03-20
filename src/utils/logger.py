@@ -2,7 +2,7 @@ import logging
 import time
 import json
 
-from utils import coerce_to_path_and_check_exist
+from utils import check_dir
 
 
 class TerminalColors:
@@ -44,7 +44,7 @@ def log(s):
 
 
 def get_logger(log_dir, name):
-    log_dir = coerce_to_path_and_check_exist(log_dir)
+    log_dir = check_dir(log_dir)
     logger = logging.getLogger(name)
     file_path = log_dir / "{}.log".format(name)
     hdlr = logging.FileHandler(file_path)

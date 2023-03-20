@@ -5,16 +5,17 @@ import shutil
 from urllib.parse import urlparse
 import time
 
-from utils import coerce_to_path_and_create_dir
+from utils import create_dir
 from utils.logger import console, log
+
 
 def get_id(dic):
     if type(dic) == dict:
         try:
-            return dic['@id']
+            return dic["@id"]
         except KeyError as e:
             try:
-                return dic['id']
+                return dic["id"]
             except KeyError as e:
                 log(f"No id provided {e}")
     console(dic)
@@ -25,25 +26,72 @@ def get_id(dic):
     return None
 
 
-def get_canvas_img(canvas_img):
-    img_id = get_img_id(canvas_img['resource'])
-    img_url = get_id(canvas_img['resource']['service'])
-    return img_id, img_url
+def get_canvas_img(canvas_img, only_img_url=False):
+    img_url = get_id(canvas_img["resource"]["service"])
+    if only_img_url:
+        return img_url
+    return get_img_id(canvas_img["resource"]), img_url
 
 
-def get_item_img(item_img):
-    img_id = get_img_id(item_img)
-    img_url = get_id(item_img['body']['service'][0])
-    return img_id, img_url
+def get_item_img(item_img, only_img_url=False):
+    img_url = get_id(item_img["body"]["service"][0])
+    if only_img_url:
+        return img_url
+    return get_img_id(item_img), img_url
 
 
 def get_img_id(img):
     img_id = get_id(img)
-    if "default.jpg" in img_id:
-        console(img_id.split('/')[-5])
-        return img_id.split('/')[-5]
+    if ".jpg" in img_id:
+        try:
+            return img_id.split("/")[-5]
+        except IndexError:
+            return None
         # return Path(urlparse(img_id).path).parts[-5]
-    return img_id.split('/')[-1]
+    return img_id.split("/")[-1]
+
+
+def get_iiif_resources(manifest, only_img_url=False):
+    try:
+        img_list = [
+            canvas["images"] for canvas in manifest["sequences"][0]["canvases"]
+        ]
+        img_info = [
+            get_canvas_img(img, only_img_url) for imgs in img_list for img in imgs
+        ]
+    except KeyError:
+        try:
+            img_list = [
+                item
+                for items in manifest["items"]
+                for item in items["items"][0]["items"]
+            ]
+            img_info = [get_item_img(img) for img in img_list]
+        except KeyError as e:
+            console(f"Unable to retrieve resources from manifest {manifest}\n{e}")
+            return []
+
+    return img_info
+
+
+def get_json(url):
+    try:
+        response = requests.get(url)
+        if response.ok:
+            return response.json()
+        else:
+            response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        log(e)
+        return None
+
+
+def get_formatted_size(width="", height=""):
+    if not width and not height:
+        # return "full"
+        return "1500,"
+    return f"{width or ''},{height or ''}"
+
 
 
 class IIIFDownloader:
@@ -51,26 +99,20 @@ class IIIFDownloader:
 
     def __init__(self, manifest_urls, output_dir, width=None, height=None):
         self.manifest_urls = manifest_urls
-        self.output_dir = coerce_to_path_and_create_dir(output_dir)
-        self.size = self.get_formatted_size(width, height)
-
-    @staticmethod
-    def get_formatted_size(width, height):
-        return "1000,"
+        self.output_dir = create_dir(output_dir)
+        self.size = get_formatted_size(width, height)
 
     def run(self):
         for url in self.manifest_urls:
-            manifest = self.get_json(url)
+            manifest = get_json(url)
             if manifest is not None:
                 manifest_id = Path(urlparse(get_id(manifest)).path).parent.name
 
                 console(f"Processing {manifest_id}...")
-                output_path = coerce_to_path_and_create_dir(
+                output_path = create_dir(
                     self.output_dir / manifest_id
                 )
-                resources = self.get_resources(manifest)
-
-                for rsrc in resources:
+                for rsrc in get_iiif_resources(manifest):
                     img_id = rsrc[0]
                     img_url = f"{rsrc[1]}/full/{self.size}/0/default.jpg"
                     console(rsrc)
@@ -85,36 +127,6 @@ class IIIFDownloader:
                                 shutil.copyfileobj(response.raw, f)
                         except Exception as e:
                             console(f"{url} not working\n{e}", "error")
-
-
-    @staticmethod
-    def get_json(url):
-        try:
-            response = requests.get(url)
-            if response.ok:
-                return response.json()
-            else:
-                response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            log(e)
-            return None
-
-    @staticmethod
-    def get_resources(manifest):
-        try:
-            img_list = [canvas['images'] for canvas in manifest['sequences'][0]['canvases']]
-            img_info = [get_canvas_img(img) for imgs in img_list for img in imgs]
-        except KeyError:
-            try:
-                img_list = [item for items in manifest['items'] for item in items['items'][0]['items']]
-                img_info = [get_item_img(img) for img in img_list]
-            except KeyError as e:
-                console(manifest['items'][0])
-                log(f"Error when retrieving canvas {e}")
-                return []
-
-        return img_info
-
 
 
 if __name__ == '__main__':

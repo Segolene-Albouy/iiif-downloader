@@ -1,0 +1,14 @@
+https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6281569x/manifest.json
+https://www.e-rara.ch/i3f/v20/14465351/manifest
+https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json
+https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/manifest
+https://view.nls.uk/manifest/1929/8425/192984258/manifest.json
+https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json
+https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031
+https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json
+https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json
+https://nubis.univ-paris1.fr/iiif/3/47206/manifest
+https://bibnum.institutdefrance.fr/iiif/22490/manifest
+https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
+https://bibnum.institutdefrance.fr/iiif/22490/manifest
+https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
