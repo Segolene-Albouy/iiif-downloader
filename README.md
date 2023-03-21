@@ -26,14 +26,14 @@ https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 No special issue
 
 ``` bash
-https://www.e-rara.ch/i3f/v20/14465351/manifest 								# E-rara
-https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json					# Archive lab
-https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/test-manifests				# Bibliothèque Mazarine
-https://view.nls.uk/manifest/1929/8425/192984258/manifest.json					# Library of Scotland
+https://www.e-rara.ch/i3f/v20/14465351/manifest                                 # E-rara
+https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json                   # Archive lab
+https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/test-manifests             # Bibliothèque Mazarine
+https://view.nls.uk/manifest/1929/8425/192984258/manifest.json                  # Library of Scotland
 https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json # Radboud Universiteitsbibliotheek
-https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031								# University of Cambridge
-https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json			# e-Codices
-https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json						# DigiVatLib
-https://bibnum.institutdefrance.fr/iiif/22490/test-manifests					# Institut de France
-https://content.staatsbibliothek-berlin.de/dc/744029791/test-manifests			# Berlin Staatsbibliothek
+https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031                              # University of Cambridge
+https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json          # e-Codices
+https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json                      # DigiVatLib
+https://bibnum.institutdefrance.fr/iiif/22490/test-manifests                    # Institut de France
+https://content.staatsbibliothek-berlin.de/dc/744029791/test-manifests          # Berlin Staatsbibliothek
 ```
