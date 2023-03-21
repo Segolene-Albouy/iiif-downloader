@@ -1,3 +1,4 @@
+https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
 https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6281569x/manifest.json
 https://www.e-rara.ch/i3f/v20/14465351/manifest
 https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json
@@ -9,5 +10,3 @@ https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json
 https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json
 https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
-https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
-
