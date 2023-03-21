@@ -10,5 +10,4 @@ https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json
 https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
 https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
-https://bibnum.institutdefrance.fr/iiif/22490/manifest
-https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
+
