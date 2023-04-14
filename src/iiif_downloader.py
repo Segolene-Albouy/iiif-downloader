@@ -1,5 +1,7 @@
 import argparse
+import os
 from pathlib import Path
+from PIL import Image, UnidentifiedImageError
 import requests
 import shutil
 from urllib.parse import urlparse
@@ -158,7 +160,7 @@ def save_iiif_img(img_rscr, i, work, output_dir, size="full", re_download=False)
                 return
             else:
                 log(f"Failed to extract images from {img_url}")
-                iiif_log(img_url)
+                # iiif_log(img_url)
                 return
 
         save_img(img, img_name, output_dir, f"Failed to extract from {img_url}")
