@@ -11,4 +11,3 @@ https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json
 https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
 https://bvmm.irht.cnrs.fr/iiif/24971/manifest
-
