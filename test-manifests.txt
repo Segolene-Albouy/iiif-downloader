@@ -11,3 +11,5 @@ https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json
 https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
 https://bvmm.irht.cnrs.fr/iiif/24971/manifest
+https://iiif.archivelab.org/iiif/OlOJ_surya-grahana-and-chandra-grahana-sanskrit-subject-jyotish-gurukul-kangri-collection/manifest.json
+https://eida.obspm.fr/eida/iiif/auto/manuscript/ms-3/manifest.json
