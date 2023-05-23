@@ -20,3 +20,4 @@ https://digital.blb-karlsruhe.de/i3f/v20/1942311/manifest
 https://iiif.nli.org.il/IIIFv21/DOCID/PNX_MANUSCRIPTS990001221250205171-1/manifest
 https://api.digitale-sammlungen.de/iiif/presentation/v2/bsb00076120/manifest
 https://iiif.bodleian.ox.ac.uk/iiif/manifest/f7abf7d2-d365-4aa9-9f44-ab7d626a4d47.json
+https://iiif.lib.harvard.edu/manifests/drs:13086510
