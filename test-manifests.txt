@@ -22,3 +22,11 @@ https://eida.obspm.fr/eida/iiif/auto/manuscript/ms-3/manifest.json
 https://digital.blb-karlsruhe.de/i3f/v20/1942311/manifest
 https://iiif.lib.harvard.edu/manifests/drs:13086510
 https://www.e-rara.ch/i3f/v20/14465351/manifest
+https://permalinkbnd.bnportugal.gov.pt/iiif/3750/manifest
+https://cecilia.mediatheques.grand-albigeois.fr/iiif/15/manifest
+https://digi.ub.uni-heidelberg.de/diglit/iiif/cpg765/manifest.json
+https://www.digitalcollections.manchester.ac.uk/iiif/MS-ENGLISH-00078
+https://adore.ugent.be/IIIF/manifests/archive.ugent.be%253A010C9ED6-94DB-11E3-AFBA-2845D43445F2
+https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest
+https://sharedcanvas.be/IIIF/manifests/B_OB_MS618
+https://cdm16003.contentdm.oclc.org/iiif/2/p15150coll7:10585/manifest.json
