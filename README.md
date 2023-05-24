@@ -10,8 +10,7 @@ python src/iiif_downloader.py -f test-manifests.txt -o <output_dir> --width <wid
 ## Institutions specificities
 
 ### Gallica 
-
-Too frequent downloads in full size result in error, either reduce the size by providing a width or a height, or extend the time between two downloads
+5 downloads above 1000px allowed by minute
 ```
 https://gallica.bnf.fr/iiif/ark:/12148/bpt6k6281569x/manifest.json
 ```
@@ -22,18 +21,31 @@ Providing a size (either width or height) is mandatory
 https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 ```
 
-### Others
-No special issue
+### List of tested manifest providers
 
 ``` bash
-https://www.e-rara.ch/i3f/v20/14465351/manifest                                 # E-rara
-https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json                   # Archive lab
-https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/test-manifests             # Bibliothèque Mazarine
-https://view.nls.uk/manifest/1929/8425/192984258/manifest.json                  # Library of Scotland
-https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json # Radboud Universiteitsbibliotheek
-https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031                              # University of Cambridge
-https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json          # e-Codices
-https://digi.vatlib.it/iiif/MSS_Vat.lat.3379/manifest.json                      # DigiVatLib
-https://bibnum.institutdefrance.fr/iiif/22490/test-manifests                    # Institut de France
-https://content.staatsbibliothek-berlin.de/dc/744029791/test-manifests          # Berlin Staatsbibliothek
+https://gallica.bnf.fr/iiif/ark:/12148/btv1b11002469m/manifest.json                        # Bibliothèque nationale de France
+https://digi.vatlib.it/iiif/MSS_Vat.gr.1087/manifest.json                                  # Biblioteca Apostolica Vaticana
+https://content.staatsbibliothek-berlin.de/dc/744029791/manifest                           # Staatsbibliothek zu Berlin
+https://bibnum.institutdefrance.fr/iiif/22490/manifest                                     # Institut de France
+https://nubis.univ-paris1.fr/iiif/2/ark:/15733/1556/manifest                               # Bibliothèque Inter-Universitaire de la Sorbonne
+https://api.digitale-sammlungen.de/iiif/presentation/v2/bsb00045298/manifest               # Münchener DigitalisierungsZentrum
+https://www.qdl.qa/en/iiif/81055/vdc_100030968238.0x000001/manifest                        # Qatar Digital Library
+https://digitalcollections.universiteitleiden.nl/iiif_manifest/item%3A1572906/manifest     # Universiteit Leiden
+https://collections.library.yale.edu/manifests/16960303                                    # Yale Library
+https://iiif.slub-dresden.de/iiif/2/323548814/manifest.json                                # SLUB Dresden
+https://iiif.nli.org.il/IIIFv21/DOCID/PNX_MANUSCRIPTS990001221250205171-1/manifest         # National Library of Israel
+https://iiif.bodleian.ox.ac.uk/iiif/manifest/f7abf7d2-d365-4aa9-9f44-ab7d626a4d47.json     # Oxford Bodleian Libraries
+https://api.bl.uk/metadata/iiif/ark:/81055/vdc_100162804369.0x000001/manifest.json         # British Library
+https://iiif.archivelab.org/iiif/b30413163_0003/manifest.json                              # Internet Archive
+https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/manifest                              # Bibliothèque Mazarine
+https://view.nls.uk/manifest/1929/8425/192984258/manifest.json                             # National Library of Scotland
+https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json            # Universiteit Utrecht
+https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031                                         # Cambridge University Library
+https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json                     # Bibliothèque virtuelle des manuscrits en Suisse
+https://bvmm.irht.cnrs.fr/iiif/24971/manifest                                              # Institut de recherche et d'histoire des textes
+https://eida.obspm.fr/eida/iiif/auto/manuscript/ms-3/manifest.json                         # EIDA platform
+https://digital.blb-karlsruhe.de/i3f/v20/1942311/manifest                                  # Badische Landesbibliothek
+https://iiif.lib.harvard.edu/manifests/drs:13086510                                        # Harvard Library
+https://www.e-rara.ch/i3f/v20/14465351/manifest                                            # E-rara
 ```
