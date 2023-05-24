@@ -23,6 +23,8 @@ https://nubis.univ-paris1.fr/iiif/3/47206/manifest
 
 ### List of tested manifest providers
 
+Find manifests using [Biblissima IIIF Collections](https://iiif.biblissima.fr/collections/search?q=)
+
 ``` bash
 https://gallica.bnf.fr/iiif/ark:/12148/btv1b11002469m/manifest.json                        # Bibliothèque nationale de France
 https://digi.vatlib.it/iiif/MSS_Vat.gr.1087/manifest.json                                  # Biblioteca Apostolica Vaticana
@@ -48,4 +50,12 @@ https://eida.obspm.fr/eida/iiif/auto/manuscript/ms-3/manifest.json              
 https://digital.blb-karlsruhe.de/i3f/v20/1942311/manifest                                  # Badische Landesbibliothek
 https://iiif.lib.harvard.edu/manifests/drs:13086510                                        # Harvard Library
 https://www.e-rara.ch/i3f/v20/14465351/manifest                                            # E-rara
+https://permalinkbnd.bnportugal.gov.pt/iiif/3750/manifest                                  # Biblioteca Nacional de Portugal
+https://cecilia.mediatheques.grand-albigeois.fr/iiif/15/manifest                           # Médiathèques d'Albi
+https://digi.ub.uni-heidelberg.de/diglit/iiif/cpg765/manifest.json                         # Universität Heidelberg
+https://www.digitalcollections.manchester.ac.uk/iiif/MS-ENGLISH-00078                      # University of Manchester
+https://adore.ugent.be/IIIF/manifests/archive.ugent.be%253A010C9ED6-94DB-11E3-AFBA-2845D43445F2 # Ghent University Library
+https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest                    # University of Toronto Libraries
+https://sharedcanvas.be/IIIF/manifests/B_OB_MS618                                          # Mmmonk
+https://cdm16003.contentdm.oclc.org/iiif/2/p15150coll7:10585/manifest.json                 # The Huntington Library
 ```
