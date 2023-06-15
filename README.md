@@ -9,6 +9,11 @@ python src/iiif_downloader.py -f test-manifests.txt -o <output_dir> --width <wid
 
 ## Institutions specificities
 
+### Download limit
+
+Leiden University: https://digitalcollections.universiteitleiden.nl/iiif_manifest/item%3A3411841/manifest
+Qatar Digital Library: https://www.qdl.qa/en/iiif/81055/vdc_100030968238.0x000001/manifest
+
 ### Gallica 
 5 downloads above 1000px allowed by minute
 ```
