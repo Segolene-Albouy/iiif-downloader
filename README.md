@@ -4,7 +4,7 @@ Code adapted from https://github.com/monniert/docExtractor/blob/master/src/iiif_
 ```
 python3 -m venv venv
 source venv/bin/activate
-python src/iiif_downloader.py -f test-manifests.txt -o <output_dir> --width <width-in-px> --height <height-in-px> --sleep <duration-in-sec>
+python iiif_downloader.py -f test-manifests.txt -max <max_dimension> -min <min_dimension>
 ```
 
 ## Institutions specificities
