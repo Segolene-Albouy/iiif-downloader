@@ -18,14 +18,16 @@ class IIIFDownloader:
 
     def __init__(
         self,
-        manifest_urls,
+        manifest_list,
         max_dim=MAX_SIZE,
         min_dim=1500,
+        allow_truncation=False,
     ):
-        self.manifest_urls = manifest_urls
+        self.manifest_urls = manifest_list
         self.manifest_id = None  # Identifier for the directory name
         self.manifest_dir_path = IMG_PATH
         self.current_manifest_url = None
+        self.allow_truncation = allow_truncation
 
         self.max_dim = max_dim  # Maximal height in px
         self.min_dim = min_dim  # Minimal height in px
@@ -33,6 +35,7 @@ class IIIFDownloader:
 
     def run(self):
         for url in self.manifest_urls:
+            url, first_canvas = self.get_first_canvas(url)
             self.current_manifest_url = url
             manifest = get_json(url)
             if manifest is not None:
@@ -44,7 +47,8 @@ class IIIFDownloader:
                 )
                 i = 1
                 for rsrc in self.get_iiif_resources(manifest):
-                    self.save_iiif_img(rsrc, i)
+                    if i >= first_canvas:
+                        self.save_iiif_img(rsrc, i)
                     i += 1
 
 
@@ -92,12 +96,40 @@ class IIIFDownloader:
                             f"[save_iiif_img] {iiif_url} is a truncated or corrupted image: {e}"
                         )
                         return
-                return save_img(img, img_name, self.manifest_dir_path)
-
         except requests.exceptions.RequestException as e:
-            log(f"[save_iiif_img] Failed to download image from {iiif_url}:\n{e}")
+            log(f"[save_iiif_img] Failed to download image from {iiif_url} (#{i}):\n{e}")
             return False
 
+        try:
+            save_img(img, img_name, self.manifest_dir_path)
+        except OSError as e:
+            if not self.allow_truncation:
+                log(f"[save_iiif_img] {iiif_url} was truncated by {e} bytes (#{i}): ")
+                return False
+            try:
+                if 0 < int(f"{e}") < 3:
+                    log(f"[save_iiif_img] {iiif_url} was truncated by {e} bytes (#{i})\nSaving the truncated version")
+                    save_img(img, img_name, self.manifest_dir_path, load_truncated=True)
+            except ValueError as e:
+                log(f"[save_iiif_img] Failed to save image from {iiif_url} (#{i}):\n{e}")
+                return False
+            except Exception as e:
+                log(f"[save_iiif_img] Couldn't save the truncated image {iiif_url} (#{i}):\n{e} bytes not processed")
+                return False
+        return True
+
+    def get_first_canvas(self, manifest_line):
+        if len(manifest_line.split(" ")) != 2:
+            return manifest_line, 0
+
+        url = manifest_line.split(" ")[0]
+        try:
+            first_canvas = int(manifest_line.split(" ")[1])
+        except (ValueError, IndexError) as e:
+            log(f"[get_first_canvas] Could not retrieve canvas from {manifest_line}: {e}")
+            first_canvas = 0
+
+        return url, first_canvas
 
     def get_img_rsrc(self, iiif_img):
         try:
@@ -209,8 +241,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with open(args.file, mode='r') as f:
-        manifest_urls = f.read().splitlines()
-    manifest_urls = list(filter(None, manifest_urls))
+        manifests = f.read().splitlines()
+    manifests = list(filter(None, manifests))
 
-    downloader = IIIFDownloader(manifest_urls, max_dim=args.max_dim, min_dim=args.min_dim)
+    downloader = IIIFDownloader(manifests, max_dim=args.max_dim, min_dim=args.min_dim)
     downloader.run()

@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 import requests
-from PIL import Image
+from PIL import Image, ImageFile
 
 from utils.constants import IMG_PATH, MAX_SIZE, MAX_RES
 
@@ -37,9 +37,13 @@ def save_img(
     max_dim=MAX_SIZE,
     dpi=MAX_RES,
     img_format="JPEG",
+    load_truncated=False
 ):
     # if glob.glob(img_path / img_filename):
     #     return False  # NOTE: maybe download again anyway because manifest / pdf might have changed
+
+    # truncated files are downloaded and missing bytes are replaced by a gray area
+    ImageFile.LOAD_TRUNCATED_IMAGES = load_truncated
 
     try:
         if img.width > max_dim or img.height > max_dim:
@@ -48,6 +52,13 @@ def save_img(
             )  # Image.Resampling.LANCZOS
         img.save(img_path / img_filename, format=img_format)
         return True
+    except OSError as e:
+        error = f"{e}"
+        if "image file is truncated" in error:
+            missing_bytes = error[25:].split(" ")[0]
+            raise OSError(missing_bytes)
+
+        raise OSError(f"[save_img] {error_msg}:\n{e}")
     except Exception as e:
         raise f"[save_img] {error_msg}:\n{e}"
 
