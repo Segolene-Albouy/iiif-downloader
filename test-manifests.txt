@@ -3,6 +3,7 @@ https://digi.vatlib.it/iiif/MSS_Vat.gr.1087/manifest.json
 https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
 https://nubis.univ-paris1.fr/iiif/2/ark:/15733/1556/manifest
+https://nubis.bis-sorbonne.fr/iiif/3/nwsx/manifest
 https://api.digitale-sammlungen.de/iiif/presentation/v2/bsb00045298/manifest
 https://www.qdl.qa/en/iiif/81055/vdc_100030968238.0x000001/manifest
 https://digitalcollections.universiteitleiden.nl/iiif_manifest/item%3A1572906/manifest
@@ -18,7 +19,6 @@ https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json
 https://cudl.lib.cam.ac.uk//iiif/MS-KK-00005-00031
 https://www.e-codices.unifr.ch/metadata/iiif/fmb-cb-0115/manifest.json
 https://bvmm.irht.cnrs.fr/iiif/24971/manifest
-https://eida.obspm.fr/eida/iiif/auto/manuscript/ms-3/manifest.json
 https://digital.blb-karlsruhe.de/i3f/v20/1942311/manifest
 https://iiif.lib.harvard.edu/manifests/drs:13086510
 https://www.e-rara.ch/i3f/v20/14465351/manifest
@@ -30,3 +30,13 @@ https://adore.ugent.be/IIIF/manifests/archive.ugent.be%253A010C9ED6-94DB-11E3-AF
 https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest
 https://sharedcanvas.be/IIIF/manifests/B_OB_MS618
 https://cdm16003.contentdm.oclc.org/iiif/2/p15150coll7:10585/manifest.json
+https://api.irht.cnrs.fr/ark:/63955/fl685opg22dv/manifest.json
+https://content.staatsbibliothek-berlin.de/dc/785884734/manifest
+https://damsssl.llgc.org.uk/iiif/2.0/4387889/manifest.json
+https://mss-cat.trin.cam.ac.uk/Manuscript/R.15.32/manifest.json
+https://digitallibrary.unicatt.it/veneranda/data/public/manifests/0b/02/da/82/80/0a/f4/58/0b02da82800af458.json
+https://polona.pl/api/search-index/search/iiif/a399f131-4051-4562-8d46-c0004717c879/manifest.json
+https://www.e-rara.ch/i3f/v20/14575305/manifest
+https://images.lambethpalacelibrary.org.uk/luna/servlet/iiif/collection/s/y4pi93
+https://quod.lib.umich.edu/cgi/t/text/api/manifest/umhistmath:aas8079.0001.001
+https://aikon.enpc.fr/aikon/iiif/wit1_man3/manifest.json
