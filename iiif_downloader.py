@@ -2,7 +2,7 @@ import requests
 import os
 
 
-def download_iiif_images(manifest_url, output_dir='images', finish_after=3):
+def download_iiif_images(manifest_url, output_dir='images', finish_after=None):
     os.makedirs(output_dir, exist_ok=True)
 
     response = requests.get(manifest_url)
@@ -10,10 +10,11 @@ def download_iiif_images(manifest_url, output_dir='images', finish_after=3):
 
     canvases = json_manifest['sequences'][0]['canvases']
     for i, canvas in enumerate(canvases):
-        if i >= finish_after:
+        if finish_after and i >= finish_after:
             return
-        # get image URL
+
         image_url = canvas['images'][0]['resource']['@id']
+        print(f"Downloading {image_url}...")
 
         # Download image
         image_response = requests.get(image_url)
@@ -23,12 +24,13 @@ def download_iiif_images(manifest_url, output_dir='images', finish_after=3):
         with open(filepath, 'wb') as f:
             f.write(image_response.content)
 
-        print(f"Downloaded: {image_url}")
+        print(f"{image_url} has been downloaded!")
 
 
 if __name__ == "__main__":
-    with open("test-manifests.txt", mode='r') as f:
-        manifests = list(f.read().splitlines())
+    with open("test-manifests.txt", mode='r') as file:
+        manifests = list(file.read().splitlines())
 
     for manifest in manifests:
-        download_iiif_images(manifest)
+        print(f"Downloading {manifest}...")
+        download_iiif_images(manifest, finish_after=3)
