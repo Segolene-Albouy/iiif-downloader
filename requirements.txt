@@ -2,3 +2,4 @@ charset-normalizer
 Pillow
 requests
 urllib3
+tqdm

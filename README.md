@@ -1,10 +1,9 @@
 # iiif-downloader
-Code adapted from https://github.com/monniert/docExtractor/blob/master/src/iiif_downloader.py
 
 ```
 python3 -m venv venv
-source venv/bin/activate
-python iiif_downloader.py -f test-manifests.txt -max <max_dimension> -min <min_dimension>
+venv/bin/pip install -r requirements.txt
+venv/bin/python iiif_downloader.py -f test-manifests.txt -max <max_dimension> -min <min_dimension>
 ```
 
 ## Institutions specificities

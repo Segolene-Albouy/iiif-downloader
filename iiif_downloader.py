@@ -1,124 +1,224 @@
 import argparse
-import glob
 import os
+import time
 from pathlib import Path
+from typing import Optional, Dict, Any
 from PIL import Image, UnidentifiedImageError
 import requests
 from urllib.parse import urlparse
-import time
 
-from utils import MAX_SIZE, IMG_PATH, sanitize_str, get_json, save_img
-from utils.constants import MIN_SIZE
-from utils import create_dir, get_height, get_width, get_id, sanitize_url
-from utils.logger import console, log
+from utils import (
+    MAX_SIZE, IMG_PATH, sanitize_str, get_json, save_img,
+    create_dir, get_height, get_width, get_id, sanitize_url, get_meta_value
+)
+from utils.constants import MIN_SIZE, DEBUG
+from utils.logger import logger
 
 
 class IIIFDownloader:
-    """Download all image resources from a list of manifest urls."""
+    """Download all image resources from a IIIF manifest.
+
+    Args:
+        manifest_url (str): URL of the IIIF manifest
+        max_dim (int, optional): Maximum dimension for downloaded images. Defaults to MAX_SIZE.
+        min_dim (int, optional): Minimum dimension for downloaded images. Defaults to 1500.
+        allow_truncation (bool, optional): Whether to allow truncated images. Defaults to False.
+
+    Attributes:
+        manifest_url (str): URL of the current manifest
+        manifest_id (str): Identifier for the manifest directory
+        manifest_dir_path (Path): Path where images will be saved
+        max_dim (int): Maximum dimension for images
+        min_dim (int): Minimum dimension for images
+        allow_truncation (bool): Whether to allow truncated images
+        original_license (str): License from the manifest
+        attribution (str): Attribution from the manifest
+    """
 
     def __init__(
         self,
-        manifest_list,
-        max_dim=MAX_SIZE,
-        min_dim=1500,
-        allow_truncation=False,
+        manifest_url: str,
+        max_dim: int = MAX_SIZE,
+        min_dim: int = MIN_SIZE,
+        allow_truncation: bool = False,
     ):
-        self.manifest_urls = manifest_list
-        self.manifest_id = None  # Identifier for the directory name
+        self.manifest_url = manifest_url
+        self.manifest_id: Optional[str] = None
+        self.manifest_content: Optional[Dict[str, Any]] = None
         self.manifest_dir_path = IMG_PATH
-        self.current_manifest_url = None
+        self.current_url = ""
+        self.max_dim = max_dim
+        self.min_dim = min_dim
         self.allow_truncation = allow_truncation
+        self.original_license: str = ""
+        self.attribution: str = ""
 
-        self.max_dim = max_dim  # Maximal height in px
-        self.min_dim = min_dim  # Minimal height in px
+    def run(self) -> bool:
+        """Process the manifest and download all images.
 
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            self.manifest_content = get_json(self.manifest_url)
+        except Exception as e:
+            logger.error(f"Failed to get json manifest from {self.manifest_url}", exception=e)
+            return False
 
-    def run(self):
-        for url in self.manifest_urls:
-            url, first_canvas = self.get_first_canvas(url)
-            self.current_manifest_url = url
-            manifest = get_json(url)
-            if manifest is not None:
-                self.manifest_id = self.get_manifest_id(manifest)
-                console(f"Processing {self.manifest_id}...")
+        if self.manifest_content is None:
+            logger.error(f"Failed to get json manifest from {self.manifest_url}")
+            return False
 
-                self.manifest_dir_path = create_dir(
-                    IMG_PATH / self.manifest_id
-                )
-                i = 1
-                for rsrc in self.get_iiif_resources(manifest):
-                    if i >= first_canvas:
-                        self.save_iiif_img(rsrc, i)
-                    i += 1
+        self.manifest_id = self.get_manifest_id()
+        logger.info(f"Processing {self.manifest_id}...")
 
+        self.manifest_dir_path = create_dir(IMG_PATH / self.manifest_id)
 
-    def save_iiif_img(self, img_rsrc, i, size=None, re_download=False):
-        img_name = f"{i:04d}.jpg"
+        self.get_license()
+        resources = self.get_iiif_resources()
+
+        if not resources:
+            logger.warning(f"No resources found in manifest {self.manifest_url}")
+            return False
+
+        for i, rsrc in enumerate(logger.progress(resources, desc=f"Downloading {self.manifest_id}"), 1):
+            if DEBUG and i == 4:
+                break
+            if not self.save_iiif_img(rsrc, i):
+                logger.error(f"Failed to save {self.current_url}")
+                continue
+
+        return True
+
+    def save_iiif_img(
+        self,
+        img_rsrc: Dict[str, Any],
+        i: int, size: Optional[str] = None,
+        re_download: bool = False
+    ) -> bool:
+        """Save a single IIIF image.
+
+        Args:
+            img_rsrc: Resource object from manifest
+            i: Image number
+            size: Size specification for image
+            re_download: Whether to force re-download
+
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        img_name = f"{i:04d}.jpg" # TODO change image name
         f_size = size if size is not None else self.get_size(img_rsrc)
 
-        if (
-            glob.glob(os.path.join(self.manifest_dir_path, img_name))
-            and not re_download
-        ):
+        # Check if already downloaded with correct size
+        if not re_download and os.path.exists(self.manifest_dir_path / img_name):
             img = Image.open(self.manifest_dir_path / img_name)
             if self.check_size(img, img_rsrc):
-                # if the img is already downloaded and has the correct size, don't download it again
-                return False
+                return True
 
         img_url = get_id(img_rsrc["service"])
-        iiif_url = sanitize_url(f"{img_url}/full/{f_size}/0/default.jpg")
+        if img_url.endswith("full/full/0/default.jpg"):
+            self.current_url = sanitize_url(img_url)
+        else:
+            self.current_url = sanitize_url(f"{img_url}/full/{f_size}/0/default.jpg")
 
-        # Gallica is not accepting more than 5 downloads of >1000px / min after
-        sleep = 12 if "gallica" in self.current_manifest_url else 0.25
+        # Handle rate limiting for specific servers
+        sleep = 12 if "gallica" in self.manifest_url else 0.25
         time.sleep(sleep)
 
         try:
-            with requests.get(iiif_url, stream=True) as response:
+            # logger.info(f"Downloading image {i} from {self.current_url}")
+            with requests.get(self.current_url, stream=True) as response:
                 response.raw.decode_content = True
-                try:
-                    img = Image.open(response.raw)
-                except (UnidentifiedImageError, SyntaxError) as e:
-                    time.sleep(sleep)
-                    if size == f_size:
-                        size = self.get_reduced_size(img_rsrc)
-                        self.save_iiif_img(img_rsrc, i, self.get_formatted_size(size))
-                        return
-                    else:
-                        log(f"[save_iiif_img] {iiif_url} is not a valid img file: {e}")
-                        return
-                except (IOError, OSError) as e:
-                    if size == "full":
-                        size = self.get_reduced_size(img_rsrc)
-                        self.save_iiif_img(img_rsrc, i, self.get_formatted_size(size))
-                        return
-                    else:
-                        log(
-                            f"[save_iiif_img] {iiif_url} is a truncated or corrupted image: {e}"
-                        )
-                        return
-        except requests.exceptions.RequestException as e:
-            log(f"[save_iiif_img] Failed to download image from {iiif_url} (#{i}):\n{e}")
+                return self._process_image_response(response, img_name, img_rsrc, i, size)
+        except Exception as e:
+            logger.error(f"Failed to download image from {self.current_url} (#{i})", exception=e)
+            return False
+
+    def _process_image_response(
+        self, response,
+        img_name: str,
+        img_rsrc: Dict[str, Any],
+        i: int,
+        size: Optional[str]
+    ) -> bool:
+        """Process the image download response."""
+        try:
+            img = Image.open(response.raw)
+        except (UnidentifiedImageError, SyntaxError) as e:
+            if size == self.get_size(img_rsrc):
+                reduced_size = self.get_reduced_size(img_rsrc)
+                return self.save_iiif_img(
+                    img_rsrc, i, self.get_formatted_size(reduced_size)
+                )
+            # TODO change here sometimes "Requests for scales in excess of 100% are not allowed."
+            logger.error(f"Invalid image file for image {self.current_url})", exception=e)
+            return False
+        except (IOError, OSError) as e:
+            if size == "full":
+                reduced_size = self.get_reduced_size(img_rsrc)
+                return self.save_iiif_img(
+                    img_rsrc, i, self.get_formatted_size(reduced_size)
+                )
+            logger.error(f"Truncated or corrupted image {self.current_url}", exception=e)
             return False
 
         try:
-            save_img(img, img_name, self.manifest_dir_path)
+            return save_img(img, img_name, self.manifest_dir_path)
         except OSError as e:
             if not self.allow_truncation:
-                log(f"[save_iiif_img] {iiif_url} was truncated by {e} bytes (#{i}): ")
+                logger.error(f"Image was truncated {self.current_url}", exception=e)
                 return False
-            try:
-                if 0 < int(f"{e}") < 3:
-                    log(f"[save_iiif_img] {iiif_url} was truncated by {e} bytes (#{i})\nSaving the truncated version")
-                    save_img(img, img_name, self.manifest_dir_path, load_truncated=True)
-            except ValueError as e:
-                log(f"[save_iiif_img] Failed to save image from {iiif_url} (#{i}):\n{e}")
-                return False
-            except Exception as e:
-                log(f"[save_iiif_img] Couldn't save the truncated image {iiif_url} (#{i}):\n{e} bytes not processed")
-                return False
-        return True
 
-    def get_first_canvas(self, manifest_line):
+            try:
+                missing_bytes = int(str(e))
+                if 0 < missing_bytes < 3:
+                    logger.warning(f"Image {self.current_url} truncated by {missing_bytes} bytes - saving anyway")
+                    return save_img(img, img_name, self.manifest_dir_path, load_truncated=True)
+            except ValueError:
+                logger.error(f"Failed to process truncated image {self.current_url}", exception=e)
+            return False
+
+
+    def get_license(self) -> None:
+        """Extract license information from manifest."""
+        manifest = self.manifest_content
+        if "license" in manifest:
+            self.original_license = manifest["license"]
+            return
+
+        if "metadata" not in manifest:
+            if "attribution" in manifest:
+                self.original_license = manifest["attribution"]
+            return
+
+        labels = [
+            "license",
+            "license",
+            "lizenz",
+            "rights",
+            "droits",
+            "access",
+            "copyright",
+            "rechteinformationen",
+            "conditions",
+        ]
+        for label in labels:
+            for item in manifest["metadata"]:
+                if label in str(item.get("label", "")).lower():
+                    self.original_license = item.get("value", "")
+                    return
+
+        for label in labels:
+            for metadatum in manifest["metadata"]:
+                if value := get_meta_value(metadatum, label):
+                    self.original_license = value
+                    return
+        if "attribution" in manifest:
+            self.original_license = manifest["attribution"]
+
+    @staticmethod
+    def get_first_canvas(manifest_line):
         if len(manifest_line.split(" ")) != 2:
             return manifest_line, 0
 
@@ -126,12 +226,13 @@ class IIIFDownloader:
         try:
             first_canvas = int(manifest_line.split(" ")[1])
         except (ValueError, IndexError) as e:
-            log(f"[get_first_canvas] Could not retrieve canvas from {manifest_line}: {e}")
+            logger.warning(f"[get_first_canvas] Could not retrieve canvas from {manifest_line}: {e}")
             first_canvas = 0
 
         return url, first_canvas
 
-    def get_img_rsrc(self, iiif_img):
+    @staticmethod
+    def get_img_rsrc(iiif_img):
         try:
             img_rsrc = iiif_img["resource"]
         except KeyError:
@@ -141,7 +242,8 @@ class IIIFDownloader:
                 return None
         return img_rsrc
 
-    def get_iiif_resources(self, manifest, only_img_url=False):
+    def get_iiif_resources(self):
+        manifest = self.manifest_content
         try:
             # Usually images URL are contained in the "canvases" field
             img_list = [
@@ -158,8 +260,8 @@ class IIIFDownloader:
                 ]
                 img_info = [self.get_img_rsrc(img) for img in img_list]
             except KeyError as e:
-                log(
-                    f"[get_iiif_resources] Unable to retrieve resources from manifest {self.current_manifest_url}\n{e}"
+                logger.error(
+                    f"[get_iiif_resources] Unable to retrieve resources from manifest {self.manifest_url}", exception=e
                 )
                 return []
 
@@ -169,9 +271,15 @@ class IIIFDownloader:
         if self.max_dim is None:
             return "full"
         h, w = get_height(img_rsrc), get_width(img_rsrc)
+
+        if h is None or w is None:
+            return "full"
+
         if h > w:
-            return self.get_formatted_size("", str(self.max_dim))
-        return self.get_formatted_size(str(self.max_dim), "")
+            h = self.max_dim if h > self.max_dim else h
+            return self.get_formatted_size("", str(h))
+        w = self.max_dim if w > self.max_dim else w
+        return self.get_formatted_size(str(w), "")
 
     def check_size(self, img, img_rsrc):
         """
@@ -206,6 +314,9 @@ class IIIFDownloader:
 
     def get_reduced_size(self, img_rsrc):
         h, w = get_height(img_rsrc), get_width(img_rsrc)
+        if h is None or w is None:
+            return str(self.min_dim)
+
         larger_side = h if h > w else w
 
         if larger_side < self.min_dim:
@@ -215,15 +326,15 @@ class IIIFDownloader:
         return str(self.min_dim)
 
     def get_dir_name(self):
-        return sanitize_str(self.current_manifest_url).replace("manifest", "").replace("json", "")
+        return sanitize_str(self.manifest_url).replace("manifest", "").replace("json", "")
 
-    def get_manifest_id(self, manifest):
-        manifest_id = get_id(manifest)
+    def get_manifest_id(self):
+        manifest_id = get_id(self.manifest_content)
         if manifest_id is None:
             return self.get_dir_name()
         if "manifest" in manifest_id:
             try:
-                manifest_id = Path(urlparse(get_id(manifest)).path).parent.name
+                manifest_id = Path(urlparse(manifest_id).path).parent.name
                 if "manifest" in manifest_id:
                     return self.get_dir_name()
                 return sanitize_str(manifest_id)
@@ -241,8 +352,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with open(args.file, mode='r') as f:
-        manifests = f.read().splitlines()
-    manifests = list(filter(None, manifests))
+        manifests = [line.strip() for line in f if line.strip()]
 
-    downloader = IIIFDownloader(manifests, max_dim=args.max_dim, min_dim=args.min_dim)
-    downloader.run()
+    if not manifests:
+        logger.error("No manifests found in the input file")
+        exit(1)
+
+    logger.info(f"Found {len(manifests)} manifests to process")
+
+    for manifest in logger.progress(manifests, desc="Processing manifests"):
+        try:
+            downloader = IIIFDownloader(manifest, max_dim=args.max_dim, min_dim=args.min_dim)
+            downloader.run()
+        except Exception as e:
+            logger.error(f"Failed to process manifest {manifest}", exception=e)
+            continue
