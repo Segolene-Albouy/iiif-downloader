@@ -1,3 +1,4 @@
+https://iiif.bodleian.ox.ac.uk/iiif/manifest/f7abf7d2-d365-4aa9-9f44-ab7d626a4d47.json
 https://digi.vatlib.it/iiif/MSS_Vat.gr.1087/manifest.json
 https://content.staatsbibliothek-berlin.de/dc/744029791/manifest
 https://bibnum.institutdefrance.fr/iiif/22490/manifest
@@ -7,7 +8,6 @@ https://digitalcollections.universiteitleiden.nl/iiif_manifest/item%3A1572906/ma
 https://collections.library.yale.edu/manifests/16960303
 https://iiif.slub-dresden.de/iiif/2/323548814/manifest.json
 https://iiif.nli.org.il/IIIFv21/DOCID/PNX_MANUSCRIPTS990001221250205171-1/manifest
-https://iiif.bodleian.ox.ac.uk/iiif/manifest/f7abf7d2-d365-4aa9-9f44-ab7d626a4d47.json
 https://mazarinum.bibliotheque-mazarine.fr/iiif/2134/manifest
 https://view.nls.uk/manifest/1929/8425/192984258/manifest.json
 https://bijzonderecollecties.ubn.ru.nl/iiif/2/Handschriften:12689/manifest.json
@@ -25,6 +25,9 @@ https://iiif.library.utoronto.ca/presentation/v2/fisher2:F6521/manifest
 https://sharedcanvas.be/IIIF/manifests/B_OB_MS618
 https://cdm16003.contentdm.oclc.org/iiif/2/p15150coll7:10585/manifest.json
 https://gallica.bnf.fr/iiif/ark:/12148/btv1b11002469m/manifest.json
+
+https://nubis.bis-sorbonne.fr/iiif/3/nsf0/manifest
+https://adore.ugent.be/IIIF/manifests/archive.ugent.be:7B8203B0-CF86-11E7-888C-AE384C411AA8
 
 https://nubis.univ-paris1.fr/iiif/2/ark:/15733/1556/manifest
 https://api.bl.uk/metadata/iiif/ark:/81055/vdc_100162804369.0x000001/manifest.json

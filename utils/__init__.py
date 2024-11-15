@@ -1,7 +1,8 @@
 import json
+import re
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import urlparse
 
 import requests
 from PIL import Image, ImageFile
@@ -170,29 +171,38 @@ def substrs_in_str(string, substrings):
     return False
 
 
+def get_version_nb(lic):
+    version = re.findall(r"\d\.\d", lic)
+    if len(version):
+        return version[0]
+    nb = re.findall(r"\d", lic)
+    if len(nb):
+        return f"{nb[0]}.0"
+    return "1.0"
+
+
 def get_license_url(lic):
-    # TODO improve
-    validator = URLValidator()
-    try:
-        validator(lic)
-    except ValidationError as e:
-        lic = normalize_str(lic).replace(" ", "")
-        version = get_version_nb(lic)
-        if substrs_in_str(lic, ["publicdomain", "cc0", "pdm"]):
-            return "https://creativecommons.org/publicdomain/mark/1.0/"
-        if substrs_in_str(lic, ["byncsa", "noncommercialsharealike"]):
-            return f"https://creativecommons.org/licenses/by-nc-sa/{version}/"
-        if substrs_in_str(lic, ["byncnd", "noncommercialnoderiv"]):
-            return f"https://creativecommons.org/licenses/by-nc-nd/{version}/"
-        if substrs_in_str(lic, ["bysa", "sharealike"]):
-            return f"https://creativecommons.org/licenses/by-sa/{version}/"
-        if substrs_in_str(lic, ["bync", "noncommercial"]):
-            return f"https://creativecommons.org/licenses/by-nc/{version}/"
-        if substrs_in_str(lic, ["bynd", "noderiv"]):
-            return f"https://creativecommons.org/licenses/by-nd/{version}/"
-        if substrs_in_str(lic, ["by"]):
-            return f"https://creativecommons.org/licenses/by/{version}/"
-        return None
+    result = urlparse(lic)
+    if result.scheme and result.netloc:
+        return lic
+
+    normalized = lic.lower().strip().replace("-", "").replace(" ", "")
+    version = get_version_nb(normalized)
+
+    license_map = {
+        ("publicdomain", "cc0", "pdm"): "https://creativecommons.org/publicdomain/mark/1.0/",
+        ("byncsa", "noncommercialsharealike"): f"by-nc-sa/{version}/",
+        ("byncnd", "noncommercialnoderiv"): f"by-nc-nd/{version}/",
+        ("bysa", "sharealike"): f"by-sa/{version}/",
+        ("bync", "noncommercial"): f"by-nc/{version}/",
+        ("bynd", "noderiv"): f"by-nd/{version}/",
+        ("by",): f"by/{version}/"
+    }
+
+    for terms, url in license_map.items():
+        if substrs_in_str(normalized, terms):
+            return f"https://creativecommons.org/licenses/{url}" if "publicdomain" not in terms else url
+
     return lic
 
 

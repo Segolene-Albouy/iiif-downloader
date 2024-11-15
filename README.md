@@ -3,7 +3,7 @@
 ```
 python3 -m venv venv
 venv/bin/pip install -r requirements.txt
-venv/bin/python iiif_downloader.py -f test-manifests.txt -max <max_dimension> -min <min_dimension>
+venv/bin/python run.py -f test-manifests.txt -max <max_dimension> -min <min_dimension>
 ```
 
 ## Institutions specificities

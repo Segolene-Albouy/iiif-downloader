@@ -92,12 +92,12 @@ class Logger:
         self.logger = logging.getLogger("iiif-downloader")
         self.logger.setLevel(logging.INFO)
 
-        # File handler for errors
+        # Write errors in log file
         fh = logging.FileHandler(self.error_log)
         fh.setLevel(logging.ERROR)
         self.logger.addHandler(fh)
 
-        # Console handler for all levels
+        # Only write info messages to console
         ch = logging.StreamHandler()
         ch.setLevel(logging.INFO)
         self.logger.addHandler(ch)
@@ -120,7 +120,7 @@ class Logger:
 
         return f"\n\n\n{timestamp}\n{color}{self.COLORS['bold']}{formatted_msg}{self.COLORS['end']}\n\n\n"
 
-    def error(self, msg: Any, exception: Optional[Exception] = None):
+    def error(self, msg: Any = "🚨🚨🚨", exception: Optional[Exception] = None):
         """
         Log an error message and optionally an exception
 
@@ -136,11 +136,11 @@ class Logger:
 
         self.logger.error(error_msg)
 
-    def warning(self, msg: Any):
+    def warning(self, msg: Any = "⚠️⚠️⚠️"):
         """Log a warning message."""
         self.logger.warning(self._format_message(msg, 'warning'))
 
-    def info(self, msg: Any = "🚨🚨🚨"):
+    def info(self, msg: Any = "ℹ️ℹ️ℹ️"):
         """Log an info message."""
         self.logger.info(self._format_message(msg, 'info'))
 
