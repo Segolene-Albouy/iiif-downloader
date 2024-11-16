@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any, Iterable, Optional, Union
 from tqdm import tqdm
 
-from utils import strip_tags
-from utils.constants import LOG_PATH
+from . import strip_tags
+from ..config import config
 
 
 def sanitize(v):
@@ -201,4 +201,4 @@ class Logger:
 
 
 # Create a global logger instance
-logger = Logger(LOG_PATH)
+logger = Logger(config.log_dir)

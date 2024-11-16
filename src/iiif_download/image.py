@@ -3,12 +3,11 @@ import time
 from io import BytesIO
 from pathlib import Path
 from typing import Optional, Dict, Any
-from PIL import Image as PILImage
-import requests
+from PIL import Image as PILgrimage
 
-from utils import MAX_SIZE, save_img, sanitize_url, get_size, get_url_response
-from utils.constants import MIN_SIZE
-from utils.logger import logger
+from .utils import save_img, sanitize_url, get_size, get_url_response
+from .utils.logger import logger
+from .config import config
 
 
 class IIIFImage:
@@ -20,9 +19,8 @@ class IIIFImage:
         img_id: str,
         resource: Dict[str, Any],
         save_dir: Path,
-        max_dim: int = MAX_SIZE,
-        min_dim: int = MIN_SIZE,
-        allow_truncation: bool = False
+        max_dim: Optional[int] = None,
+        min_dim: Optional[int] = None,
     ):
         self.idx = idx
         self.url = sanitize_url(img_id.replace("full/full/0/default.jpg", ""))
@@ -31,14 +29,15 @@ class IIIFImage:
         self.img_name = f"{self.idx:04d}.jpg"
         self.save_dir = save_dir
 
-        self.max_dim = max_dim
-        self.min_dim = min_dim
+        # Use provided dimensions or fall back to config values
+        self.max_dim = max_dim if max_dim is not None else config.max_size
+        self.min_dim = min_dim if min_dim is not None else config.min_size
         self.size = None
         self.height = self.get_height()
         self.width = self.get_width()
 
-        self.allow_truncation = allow_truncation
-        self.sleep = 12 if "gallica" in self.url else 0.25
+        self.allow_truncation = config.allow_truncation
+        self.sleep = config.get_sleep_time(self.url)
 
     def get_height(self) -> Optional[int]:
         return get_size(self.resource, "height")
@@ -114,7 +113,7 @@ class IIIFImage:
         if not os.path.exists(self.save_dir / self.img_name):
             return False
 
-        img = PILImage.open(self.save_dir / self.img_name)
+        img = PILgrimage.open(self.save_dir / self.img_name)
         if self.max_dim is None:
             return int(img.height) == self.height
         # TODO manage the fact that sometimes the image original full dimension is bellow max_dim
@@ -131,7 +130,7 @@ class IIIFImage:
                 logger.error(f"Failed to save response content for {self.sized_url()}", exception=e)
 
         try:
-            img = PILImage.open(BytesIO(response.content))
+            img = PILgrimage.open(BytesIO(response.content))
             try:
                 return save_img(img, self.img_name, self.save_dir)
             except OSError as e:
@@ -150,7 +149,7 @@ class IIIFImage:
                 self.download_fail(f"⛔️ Failed to handle truncated image {self.sized_url()}", e)
                 return False
 
-        except (PILImage.UnidentifiedImageError, SyntaxError, IOError, OSError) as e:
+        except (PILgrimage.UnidentifiedImageError, SyntaxError, IOError, OSError) as e:
             if self.size in ["full", f"{self.max_dim},", f",{self.max_dim}"]:
                 self.size = self.get_min_size()
                 return self.download()

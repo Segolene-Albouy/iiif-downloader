@@ -2,26 +2,17 @@ from pathlib import Path
 from typing import Optional
 from urllib.parse import unquote
 
-from src.Manifest import IIIFManifest
-from utils import create_dir
-from utils.constants import MIN_SIZE, MAX_SIZE, IMG_PATH, DEBUG
-from utils.logger import logger
+from .manifest import IIIFManifest
+from .config import config
+from .utils import create_dir
+from .utils.logger import logger
 
 
 class IIIFDownloader:
     """Manages the download of IIIF manifests and their images."""
 
-    def __init__(
-        self,
-        max_dim: int = MAX_SIZE,
-        min_dim: int = MIN_SIZE,
-        img_path: Optional[Path] = IMG_PATH,
-        allow_truncation: bool = False
-    ):
+    def __init__(self, img_path: Optional[Path] = None):
         self.img_path = img_path
-        self.max_dim = max_dim  # Pass to children classes
-        self.min_dim = min_dim  # Pass to children classes
-        self.allow_truncation = allow_truncation  # Pass to children classes
 
     def download_manifest(self, url: str, save_dir: Optional[Path] = None) -> bool:
         """Download a complete manifest and all its images."""
@@ -48,7 +39,7 @@ class IIIFDownloader:
             return False
 
         for i, image in enumerate(logger.progress(images, desc=f"Downloading {url}"), start=1):
-            if DEBUG and i == 6:
+            if config.debug and i > 5:
                 break
 
             if not image.save():

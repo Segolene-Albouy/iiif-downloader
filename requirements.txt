@@ -1,4 +1,3 @@
-charset-normalizer
 Pillow
 requests
 urllib3

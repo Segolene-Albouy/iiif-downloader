@@ -1,14 +1,12 @@
 import argparse
 
-from src.Downloader import IIIFDownloader
-from utils.constants import MIN_SIZE, MAX_SIZE, IMG_PATH
-from utils.logger import logger
+from src.iiif_download.downloader import IIIFDownloader
+from src.iiif_download.utils.logger import logger
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download IIIF manifest images')
     parser.add_argument('-f', '--file', type=str, required=True, help='File containing manifest URLs')
-    parser.add_argument('-max', '--max_dim', type=int, default=MAX_SIZE, help='Maximum image dimension')
-    parser.add_argument('-min', '--min_dim', type=int, default=MIN_SIZE, help='Minimum image dimension')
+    parser.add_argument('-o', '--output', type=str, required=False, help='Path where to save downloaded images')
     args = parser.parse_args()
 
     with open(args.file) as f:
@@ -18,11 +16,7 @@ if __name__ == '__main__':
         logger.error("No manifests found in input file")
         exit(1)
 
-    downloader = IIIFDownloader(
-        max_dim=args.max_dim,
-        min_dim=args.min_dim,
-        img_path=IMG_PATH
-    )
+    downloader = IIIFDownloader(img_path=args.output)
 
     for url in logger.progress(manifests, desc="Processing manifests"):
         try:

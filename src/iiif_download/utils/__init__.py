@@ -8,7 +8,7 @@ from typing import Union, List, Dict
 import requests
 from PIL import Image, ImageFile
 
-from utils.constants import IMG_PATH, MAX_SIZE, MAX_RES
+from ..config import config
 
 
 def check_dir(path):
@@ -40,10 +40,10 @@ def sanitize_str(string):
 def save_img(
     img,
     img_filename,
-    img_path=IMG_PATH,
+    img_path=config.img_dir,
     error_msg="Failed to save img",
-    max_dim=MAX_SIZE,
-    dpi=MAX_RES,
+    max_dim=config.max_size,
+    dpi=config.max_res,
     img_format="JPEG",
     load_truncated=False
 ):
