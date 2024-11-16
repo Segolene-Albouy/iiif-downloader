@@ -8,5 +8,23 @@ target-version = ['py38']
 include = '\.pyi?$'
 
 [tool.pytest.ini_options]
-addopts = "--cov=iiif_download"
-testpaths = ["tests"]
+addopts = "-v --cov=src/iiif_download --cov-report=term-missing"
+testpaths = ["src/iiif_download/tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.coverage.run]
+source = ["src/iiif_download"]
+omit = [
+    "*/tests/*",
+    "*/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:"]
+show_missing = true
+fail_under = 40

@@ -93,7 +93,9 @@ class Config:
         return self._img_dir
 
     @img_dir.setter
-    def img_dir(self, path: Path):
+    def img_dir(self, path):
+        if not isinstance(path, (str, Path)):
+            raise TypeError("Path must be Path or string")
         self._img_dir = Path(path)
         self._img_dir.mkdir(parents=True, exist_ok=True)
 
@@ -104,6 +106,8 @@ class Config:
 
     @log_dir.setter
     def log_dir(self, path: Path):
+        if not isinstance(path, (str, Path)):
+            raise TypeError("Path must be Path or string")
         self._log_dir = Path(path)
         self._log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -127,6 +131,8 @@ class Config:
     def min_size(self, value: int):
         if value < 0:
             raise ValueError("min_size must be positive")
+        if value > self.max_size:
+            raise ValueError("min_size cannot be larger than max_size")
         self._min_size = value
 
     @property
@@ -148,6 +154,17 @@ class Config:
     def sleep_time(self) -> dict:
         """Sleep time between requests for different providers."""
         return self._sleep_time.copy()
+
+    def set_sleep_time(self, provider: str, value: float) -> None:
+        """
+        Set sleep time for a specific provider.
+        """
+        if not isinstance(value, (int, float)):
+            raise TypeError("Sleep time must be a number")
+        if value <= 0:
+            raise ValueError("Sleep time must be positive")
+
+        self._sleep_time[provider] = float(value)
 
     def get_sleep_time(self, url: Optional[str] = None) -> float:
         """Get sleep time for a specific URL."""
