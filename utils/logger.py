@@ -111,7 +111,7 @@ class Logger:
         """Get the ANSI color code for a message type."""
         return self.COLORS.get(color, '')
 
-    def _format_message(self, msg: Any, msg_type: str = 'info') -> str:
+    def format_message(self, msg: Any, msg_type: str = 'info') -> str:
         """Format a message with timestamp and colors."""
         color = self.get_color(msg_type)
         timestamp = self._get_timestamp()
@@ -119,6 +119,14 @@ class Logger:
         formatted_msg = pprint(msg)
 
         return f"\n\n\n{timestamp}\n{color}{self.COLORS['bold']}{formatted_msg}{self.COLORS['end']}\n\n\n"
+
+    @staticmethod
+    def format_exception(exception: Exception) -> str:
+        """Format an exception with timestamp and colors."""
+        msg = f"\n[{exception.__class__.__name__}] {str(exception)}"
+        msg += f"\n{traceback.format_exc()}"
+
+        return msg
 
     def error(self, msg: Any = "🚨🚨🚨", exception: Optional[Exception] = None):
         """
@@ -128,37 +136,35 @@ class Logger:
             msg: Message to log
             exception: Optional exception to include in log
         """
-        error_msg = self._format_message(msg, 'error')
-
+        error_msg = self.format_message(msg, 'error')
         if exception:
-            error_msg += f"\n[{exception.__class__.__name__}] {str(exception)}"
-            error_msg += f"\n{traceback.format_exc()}"
+            error_msg += self.format_exception(exception)
 
         self.logger.error(error_msg)
 
     def warning(self, msg: Any = "⚠️⚠️⚠️"):
         """Log a warning message."""
-        self.logger.warning(self._format_message(msg, 'warning'))
+        self.logger.warning(self.format_message(msg, 'warning'))
 
     def info(self, msg: Any = "ℹ️ℹ️ℹ️"):
         """Log an info message."""
-        self.logger.info(self._format_message(msg, 'info'))
+        self.logger.info(self.format_message(msg, 'info'))
 
-    def magic(self, msg: Any = "🪄🪄🪄"):
-        self.logger.info(self._format_message(msg, 'magenta'))
+    def magic(self, msg: Any = "🔮🔮🔮"):
+        self.logger.info(self.format_message(msg, 'magenta'))
 
     def water(self, msg: Any = "🪼🪼🪼"):
-        self.logger.info(self._format_message(msg, 'cyan'))
+        self.logger.info(self.format_message(msg, 'cyan'))
 
     def white(self, msg: Any = "️🏳️🏳️️🏳️"):
-        self.logger.info(self._format_message(msg, 'white'))
+        self.logger.info(self.format_message(msg, 'white'))
 
     def black(self, msg: Any = "️🏴️🏴🏴"):
-        self.logger.info(self._format_message(msg, 'black'))
+        self.logger.info(self.format_message(msg, 'black'))
 
-    def success(self, msg: Any):
+    def success(self, msg: Any = "✅✅✅"):
         """Log a success message."""
-        self.logger.info(self._format_message(msg, 'success'))
+        self.logger.info(self.format_message(msg, 'success'))
 
     @staticmethod
     def progress(iterable: Iterable, desc: str = "", total: Optional[int] = None) -> tqdm:
@@ -182,16 +188,16 @@ class Logger:
             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
         )
 
-    def log_failed_download(self, img_name: str, img_url: str):
+    def log_failed_download(self, img_path: str, img_url: str):
         """
         Log a failed download attempt
 
         Args:
-            img_name: Name of the image file
-            img_url: URL that failed to download
+            img_path: Path of the image that should have been downloaded
+            img_url: URL that failed to be downloaded
         """
         with open(self.download_log, 'a') as f:
-            f.write(f"{img_name} {img_url}\n")
+            f.write(f"{img_path} {img_url}\n")
 
 
 # Create a global logger instance

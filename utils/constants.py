@@ -10,3 +10,15 @@ MAX_RES = 300
 MIN_SIZE = 1000
 
 DEBUG = True
+
+LICENSE = [
+    "license",
+    "license",
+    "lizenz",
+    "rights",
+    "droits",
+    "access",
+    "copyright",
+    "rechteinformationen",
+    "conditions",
+]

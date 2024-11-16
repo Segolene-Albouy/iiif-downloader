@@ -1,8 +1,9 @@
 import json
 import re
+from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlparse
+from typing import Union, List, Dict
 
 import requests
 from PIL import Image, ImageFile
@@ -70,6 +71,30 @@ def save_img(
         raise f"[save_img] {error_msg}:\n{e}"
 
 
+def get_url_response(url):
+    """
+    Fetch the response from a URL, handling headers, cookies, and other server requirements.
+
+    Args:
+        url (str): The URL to fetch.
+
+    Returns:
+        Response: The response object from the request.
+    """
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) "
+            "Gecko/20100101 Firefox/102.0"
+        ),
+        # "Referer": url,  # Use the URL as referer; adjust if necessary
+        # "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+    }
+
+    session = requests.Session()
+    session.headers.update(headers)
+    return session.get(url, stream=True)
+
+
 def get_json(url):
     try:
         r = requests.get(url)
@@ -107,20 +132,12 @@ def get_id(dic):
     return None
 
 
-def get_height(img_rsrc):
+def get_size(img_rsrc, dimension):
     try:
-        img_height = img_rsrc["height"]
+        img_height = img_rsrc[dimension]
     except KeyError:
         return None
     return int(img_height)
-
-
-def get_width(img_rsrc):
-    try:
-        img_width = img_rsrc["width"]
-    except KeyError:
-        return None
-    return int(img_width)
 
 
 class MLStripper(HTMLParser):
@@ -181,11 +198,32 @@ def get_version_nb(lic):
     return "1.0"
 
 
-def get_license_url(lic):
-    result = urlparse(lic)
-    if result.scheme and result.netloc:
-        return lic
+def get_license_url(original_lic):
+    lic = str(mono_val(original_lic))
 
+    if not lic:
+        return "No license information found"
+
+    lic = unescape(lic)
+    # Extract href values
+    hrefs = re.findall(r'href=[\'"]?([^\'" >]+)', lic)
+    if hrefs:
+        if len(hrefs) == 1:
+            return hrefs[0]
+        lic = " ".join(hrefs)
+    lic = strip_tags(lic)
+
+    # Extract potential URLs
+    urls = re.findall(r"(https?://[^\s]+|www\.[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:/[^\s]*)?)", lic)
+    if urls:
+        if len(urls) == 1:
+            # If there's exactly one URL, return it
+            lic = urls[0]
+            if not lic.startswith("http"):
+                lic = f"http://{lic}"  # Default to http for domain-like strings
+            return lic
+
+    # If multiple URLs or no URLs, normalize and try matching license_map
     normalized = lic.lower().strip().replace("-", "").replace(" ", "")
     version = get_version_nb(normalized)
 
@@ -206,18 +244,37 @@ def get_license_url(lic):
     return lic
 
 
-def mono_val(val):
-    if type(val) in [str, int]:
+def mono_val(val: Union[str, int, List, Dict]) -> Union[str, int, None]:
+    """
+    Extracts a single value (str or int) from a potentially nested data structure.
+    """
+    if isinstance(val, (str, int)):
         return val
-    if type(val) == dict:
-        if len(val.keys()) == 1:
-            val = list(val.values())[0]
-    if type(val) == list and len(val) == 1:
-        val = val[0]
-    return val
+
+    if isinstance(val, dict):
+        return mono_val(list(val.values()))
+
+    if isinstance(val, list):
+        if not val:
+            return None
+
+        if len(val) == 1:
+            return mono_val(val[0])
+
+        for item in val:
+            try:
+                return mono_val(item)
+            except (ValueError, TypeError):
+                continue
+
+        return None
+    return None
 
 
 def get_meta(metadatum, meta_type="label"):
+    """
+    meta_type: "label"|"value"
+    """
     if meta_type not in metadatum:
         return None
     meta_label = metadatum[meta_type]
@@ -231,7 +288,7 @@ def get_meta(metadatum, meta_type="label"):
                 return mono_val(lang_label["value"])
     if type(meta_label) == dict:
         if len(meta_label.keys()) == 1:
-            return mono_val(meta_label.values()[0])
+            return mono_val(list(meta_label.values())[0])
         if "en" in meta_label:
             return mono_val(meta_label["en"])
     return None
@@ -241,4 +298,5 @@ def get_meta_value(metadatum, label: str):
     meta_label = get_meta(metadatum, "label")
     if meta_label not in [label, label.capitalize(), f"@{label}"]:
         return None
-    return get_meta(metadatum, "value")
+    value = get_meta(metadatum, "value")
+    return value

@@ -2,7 +2,8 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 from src.Image import IIIFImage
-from utils import IMG_PATH, sanitize_str, get_json, get_id
+from utils import IMG_PATH, sanitize_str, get_json, get_id, get_license_url, get_meta_value, get_meta, mono_val
+from utils.constants import LICENSE
 from utils.logger import logger
 
 
@@ -12,7 +13,7 @@ class IIIFManifest:
     def __init__(self, url: str, img_dir: Path = IMG_PATH, manifest_dir_name: str = None):
         self.url = url
         self.content: Optional[Dict[str, Any]] = None
-        self.manifest_dir = img_dir / (manifest_dir_name or self._get_dir_name())
+        self.manifest_dir = img_dir / (manifest_dir_name or self.get_dir_name())
 
     def load(self) -> bool:
         """Load manifest content from URL."""
@@ -30,15 +31,18 @@ class IIIFManifest:
             return "No manifest loaded"
 
         if "license" in self.content:
-            return self.content["license"]
+            lic = self.content.get("license")
+            return get_license_url(mono_val(lic))
 
         if "metadata" in self.content:
-            for item in self.content.get("metadata", []):
-                for label in ["license", "rights", "copyright"]:
-                    if label in str(item.get("label", "")).lower():
-                        return item.get("value", "")
+            for label in LICENSE:
+                for meta in self.content.get("metadata", []):
+                    value = meta.get("value", "")
+                    if label in str(meta.get("label", "")).lower() or (value := get_meta_value(meta, label)):
+                        return get_license_url(value)
 
-        return self.content.get("attribution", "No license information found")
+        attribution = self.content.get("attribution")
+        return get_license_url(mono_val(attribution))
 
     def get_resources(self) -> List:
         """Extract all image resources from manifest."""
@@ -51,7 +55,7 @@ class IIIFManifest:
             canvases = self.content["sequences"][0]["canvases"]
             for canvas in canvases:
                 for image in canvas["images"]:
-                    if resource := self._get_image_resource(image):
+                    if resource := self.get_image_resource(image):
                         resources.append(resource)
         except KeyError:
             try:
@@ -59,7 +63,7 @@ class IIIFManifest:
                 items = self.content["items"]
                 for item in items:
                     for sub_item in item["items"][0]["items"]:
-                        if resource := self._get_image_resource(sub_item):
+                        if resource := self.get_image_resource(sub_item):
                             resources.append(resource)
             except KeyError as e:
                 logger.error(f"Failed to extract images from manifest", exception=e)
@@ -79,13 +83,13 @@ class IIIFManifest:
         return images
 
     @staticmethod
-    def _get_image_resource(image_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def get_image_resource(image_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Extract image resource from image data."""
         try:
             return image_data.get("resource") or image_data.get("body")
         except KeyError:
             return None
 
-    def _get_dir_name(self) -> str:
+    def get_dir_name(self) -> str:
         """Generate a directory name from manifest URL."""
         return sanitize_str(self.url).replace("manifest", "").replace("json", "")
