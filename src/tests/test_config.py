@@ -1,7 +1,7 @@
 import os
 import pytest
 from pathlib import Path
-from ..config import Config
+from ..iiif_download.config import Config
 
 
 def test_config_attribute_types():

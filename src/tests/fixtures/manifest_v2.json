@@ -1,0 +1,50 @@
+{
+    "@context": "http://iiif.io/api/presentation/2/context.json",
+    "@type": "sc:Manifest",
+    "@id": "https://example.org/manifest/v2",
+    "label": "Test Manifest v2",
+    "license": "Non-commercial use only",
+    "metadata": [
+        {
+            "label": "Author",
+            "value": "Test Author"
+        },
+        {
+            "label": "Date",
+            "value": "2024"
+        }
+    ],
+    "sequences": [
+        {
+            "@type": "sc:Sequence",
+            "canvases": [
+                {
+                    "@type": "sc:Canvas",
+                    "@id": "https://example.org/canvas/p1",
+                    "label": "p. 1",
+                    "height": 2000,
+                    "width": 1500,
+                    "images": [
+                        {
+                            "@type": "oa:Annotation",
+                            "@id": "https://example.org/annotation/p1",
+                            "motivation": "sc:painting",
+                            "resource": {
+                                "@id": "https://example.org/iiif/image1/full/full/0/default.jpg",
+                                "@type": "dctypes:Image",
+                                "format": "image/jpeg",
+                                "height": 2000,
+                                "width": 1500,
+                                "service": {
+                                    "@context": "http://iiif.io/api/image/2/context.json",
+                                    "@id": "https://example.org/iiif/image1",
+                                    "profile": "http://iiif.io/api/image/2/level2.json"
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

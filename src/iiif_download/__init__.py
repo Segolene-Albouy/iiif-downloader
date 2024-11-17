@@ -11,4 +11,4 @@ from .image import IIIFImage
 
 __version__ = "0.1.0"
 
-__all__ = ["IIIFDownloader", "IIIFManifest", "IIIFImage"]
+__all__ = ["IIIFDownloader", "IIIFManifest", "IIIFImage", "config"]

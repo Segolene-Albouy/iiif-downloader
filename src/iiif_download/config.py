@@ -35,6 +35,7 @@ class Config:
 
         # Dev settings
         self._debug = False
+        self._save_manifest = False
 
         # Initialize from environment variables if present
         self._load_from_env()
@@ -81,6 +82,9 @@ class Config:
 
         if debug := os.getenv("IIIF_DEBUG"):
             self._debug = debug.lower() in ("true", "1", "yes")
+
+        if save := os.getenv("IIIF_SAVE_MANIFEST"):
+            self._save_manifest = save.lower() in ("true", "1", "yes")
 
     def _create_dirs(self):
         """Create necessary directories if they don't exist."""
@@ -138,17 +142,39 @@ class Config:
     @property
     def max_res(self) -> int:
         """Maximum resolution for saved images."""
+        # TODO use
         return self._max_res
+
+    @max_res.setter
+    def max_res(self, value):
+        """Maximum resolution for saved images."""
+        if value < 0:
+            raise ValueError("max_res must be positive")
+        self._max_res = value
 
     @property
     def timeout(self) -> int:
-        """Timeout for network requests."""
+        """Timeout in seconds for network requests."""
+        # TODO use
         return self._timeout
+
+    @timeout.setter
+    def timeout(self, value: int):
+        if value < 0:
+            raise ValueError("Timeout must be positive")
+        self._timeout = value
 
     @property
     def retry_attempts(self) -> int:
         """Number of retry attempts for failed downloads."""
+        # TODO use
         return self._retry_attempts
+
+    @retry_attempts.setter
+    def retry_attempts(self, value: int):
+        if value < 0:
+            raise ValueError("Retry attempts must be positive")
+        self._retry_attempts = value
 
     @property
     def sleep_time(self) -> dict:
@@ -177,10 +203,33 @@ class Config:
         """Enable debug mode."""
         return self._debug
 
+    @debug.setter
+    def debug(self, value: bool):
+        if not isinstance(value, bool):
+            raise TypeError("Debug must be a boolean")
+        self._debug = value
+
+    @property
+    def save_manifest(self) -> bool:
+        """Enable debug mode."""
+        return self._save_manifest
+
+    @save_manifest.setter
+    def save_manifest(self, value: bool):
+        if not isinstance(value, bool):
+            raise TypeError("Save manifest must be a boolean")
+        self._save_manifest = value
+
     @property
     def allow_truncation(self) -> bool:
         """Allow truncation of images."""
         return self._allow_truncation
+
+    @allow_truncation.setter
+    def allow_truncation(self, value: bool):
+        if not isinstance(value, bool):
+            raise TypeError("Allow truncation must be a boolean")
+        self._allow_truncation = value
 
 
 # Global configuration instance

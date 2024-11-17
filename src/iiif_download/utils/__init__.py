@@ -241,7 +241,7 @@ def get_license_url(original_lic):
         if substrs_in_str(normalized, terms):
             return f"https://creativecommons.org/licenses/{url}" if "publicdomain" not in terms else url
 
-    return lic
+    return lic or 'No license information found'
 
 
 def mono_val(val: Union[str, int, List, Dict]) -> Union[str, int, None]:
@@ -273,30 +273,44 @@ def mono_val(val: Union[str, int, List, Dict]) -> Union[str, int, None]:
 
 def get_meta(metadatum, meta_type="label"):
     """
-    meta_type: "label"|"value"
+    Retrieve metadata value based on the specified meta_type ("label" or "value").
     """
-    if meta_type not in metadatum:
-        return None
-    meta_label = metadatum[meta_type]
-    if type(meta_label) == str:
-        return meta_label
-    if type(meta_label) == list:
-        for lang_label in meta_label:
-            if "@language" in lang_label and lang_label["@language"] == "en":
-                return mono_val(lang_label["@value"])
-            if "language" in lang_label and lang_label["language"] == "en":
-                return mono_val(lang_label["value"])
-    if type(meta_label) == dict:
-        if len(meta_label.keys()) == 1:
-            return mono_val(list(meta_label.values())[0])
-        if "en" in meta_label:
-            return mono_val(meta_label["en"])
+    meta_content = metadatum.get(meta_type)
+
+    # Return directly if it's a string
+    if isinstance(meta_content, str):
+        return meta_content
+
+    # Handle list type: prioritize English language if present
+    if isinstance(meta_content, list):
+        for lang_label in meta_content:
+            if isinstance(lang_label, dict):
+                lang = lang_label.get("@language") or lang_label.get("language")
+                value = lang_label.get("@value") or lang_label.get("value")
+                if lang == "en":
+                    return mono_val(value)
+
+    # Handle dictionary type: prioritize English keys
+    if isinstance(meta_content, dict):
+        if "en" in meta_content:
+            return mono_val(meta_content["en"])
+        # Return the first key's value if only one exists
+        if len(meta_content) == 1:
+            return mono_val(next(iter(meta_content.values())))
+
+    # Default: return None if no suitable content found
     return None
 
 
 def get_meta_value(metadatum, label: str):
+    """
+    Get the value of a metadata label.
+    metadatum = {
+        "label": "<fct-param-label>",
+        "value": "<value-to-return>"
+    }
+    """
     meta_label = get_meta(metadatum, "label")
-    if meta_label not in [label, label.capitalize(), f"@{label}"]:
+    if meta_label not in [label, label.capitalize(), label.lower(), f"@{label}"]:
         return None
-    value = get_meta(metadatum, "value")
-    return value
+    return get_meta(metadatum, "value")

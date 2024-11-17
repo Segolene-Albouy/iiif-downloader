@@ -8,8 +8,7 @@ It takes into account limitations and data specificities various institution.
 ### Inside a project
 
 ```python
-from iiif_download.downloader import IIIFDownloader 
-from iiif_download.config import config 
+from iiif_download import IIIFDownloader, config 
 
 # Override the default configuration
 config.max_size = 2500
@@ -46,3 +45,14 @@ venv/bin/python run.py -f test-manifests.txt
 
 The configuration is stored in `iiif_download/config.py` and can be overriden by setting environment variables.
 
+### Other usage
+
+```python
+from iiif_download import IIIFManifest
+
+manifest = IIIFManifest("https://example.org/manifest")
+manifest.load()
+lic = manifest.licence
+author = manifest.get_meta("author")
+images = manifest.get_images()
+```

@@ -1,8 +1,13 @@
 import json
+import sys
+
 import pytest
 from pathlib import Path
 from unittest.mock import patch
-from ..manifest import IIIFManifest
+from ..iiif_download.manifest import IIIFManifest
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+GET_JSON_PATH = 'src.iiif_download.utils.get_json'
 
 
 @pytest.fixture
@@ -22,17 +27,16 @@ def mock_manifest():
     def _create_mock(json_file):
         with open(json_file) as f:
             manifest_content = json.load(f)
-        with patch('iiif_download.manifest.get_json', return_value=manifest_content):
-            manifest = IIIFManifest("https://example.org/manifest")
-            manifest.load()
-            return manifest
+        manifest = IIIFManifest("https://example.org/manifest")
+        manifest.content = manifest_content
+        return manifest
     return _create_mock
 
 
 class TestManifest:
     """Tests for IIIFManifest."""
 
-    @pytest.mark.parametrize("version", ["v2", "v3", "test"], indirect=True)
+    @pytest.mark.parametrize("version", ["v2", "v3", "test"])
     def test_image_extraction(self, version, mock_manifest, manifest_files):
         """Test image extraction from manifest."""
         manifest = mock_manifest(manifest_files[version])
@@ -45,7 +49,7 @@ class TestManifest:
         assert image.height == 2000
         assert image.width == 1500
 
-    @pytest.mark.parametrize("version", ["v2", "v3", "test"], indirect=True)
+    @pytest.mark.parametrize("version", ["v2", "v3", "test"])
     def test_metadata_extraction(self, version, mock_manifest, manifest_files):
         """Test metadata extraction."""
         manifest = mock_manifest(manifest_files[version])
@@ -57,7 +61,7 @@ class TestManifest:
         ("v2", "creativecommons.org/licenses/by-nc/1.0"),
         ("v3", "creativecommons.org/licenses/by/4.0"),
         ("test", "creativecommons.org/publicdomain/mark/1.0")
-    ], indirect=["version"])
+    ])
     def test_license_extraction(self, version, expected_license, mock_manifest, manifest_files):
         """Test license extraction."""
         manifest = mock_manifest(manifest_files[version])
@@ -70,14 +74,16 @@ class TestManifest:
     ])
     def test_error_handling(self, manifest_content, expected_resources):
         """Test error handling for malformed manifests."""
-        with patch('iiif_download.manifest.get_json', return_value=manifest_content):
-            manifest = IIIFManifest("https://example.org/manifest")
-            manifest.load()
-            assert manifest.get_resources() == expected_resources
+        manifest = IIIFManifest("https://example.org/manifest")
+        manifest.content = manifest_content
+        assert manifest.get_resources() == expected_resources
 
-    def test_no_license(self):
+    @pytest.mark.parametrize("manifest_content,expected_license", [
+        ({}, 'No manifest loaded'),  # Empty manifest
+        ({"sequences": [{"canvases": []}]}, "No license information found"),  # Missing fields
+    ])
+    def test_no_license(self, manifest_content, expected_license):
         """Test manifest with no license."""
-        with patch('iiif_download.manifest.get_json', return_value={"sequences": []}):
-            manifest = IIIFManifest("https://example.org/manifest")
-            manifest.load()
-            assert "No license information found" in manifest.license
+        manifest = IIIFManifest("https://example.org/manifest")
+        manifest.content = manifest_content
+        assert expected_license in manifest.license

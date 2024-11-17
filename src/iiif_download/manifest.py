@@ -31,10 +31,27 @@ class IIIFManifest:
         """Load manifest content from URL."""
         try:
             self.content = get_json(self.url)
+            if config.save_manifest:
+                with open(self.manifest_dir / "manifest.json", "w") as f:
+                    f.write(str(self.content))
             return bool(self.content)
         except Exception as e:
             logger.error(f"Failed to load manifest from {self.url}", exception=e)
             return False
+
+    def get_meta(self, label: str) -> Optional[str]:
+        """Get value from manifest metadata"""
+        if not self.content:
+            return None
+
+        if "metadata" not in self.content:
+            return None
+
+        for meta in self.content.get("metadata", []):
+            if value := get_meta_value(meta, label):
+                return value
+
+        return None
 
     @property
     def license(self) -> str:
@@ -49,8 +66,10 @@ class IIIFManifest:
         if "metadata" in self.content:
             for label in LICENSE:
                 for meta in self.content.get("metadata", []):
-                    value = meta.get("value", "")
-                    if label in str(meta.get("label", "")).lower() or (value := get_meta_value(meta, label)):
+                    if label in str(meta.get("label", "")).lower():
+                        return get_license_url(meta.get("value", ""))
+
+                    if value := get_meta_value(meta, label):
                         return get_license_url(value)
 
         attribution = self.content.get("attribution")

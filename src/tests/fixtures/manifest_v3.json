@@ -1,0 +1,54 @@
+{
+    "@context": "http://iiif.io/api/presentation/3/context.json",
+    "id": "https://example.org/manifest/v3",
+    "type": "Manifest",
+    "label": { "en": [ "Test Manifest v3" ] },
+    "rights": "https://creativecommons.org/licenses/by/4.0/",
+    "metadata": [
+        {
+            "label": { "en": [ "Author" ] },
+            "value": { "en": [ "Test Author" ] }
+        },
+        {
+            "label": { "en": [ "Date" ] },
+            "value": { "en": [ "2024" ] }
+        }
+    ],
+    "items": [
+        {
+            "id": "https://example.org/canvas/p1",
+            "type": "Canvas",
+            "label": { "en": [ "p. 1" ] },
+            "height": 2000,
+            "width": 1500,
+            "items": [
+                {
+                    "id": "https://example.org/page/p1",
+                    "type": "AnnotationPage",
+                    "items": [
+                        {
+                            "id": "https://example.org/annotation/p1",
+                            "type": "Annotation",
+                            "motivation": "painting",
+                            "body": {
+                                "id": "https://example.org/iiif/image1/full/full/0/default.jpg",
+                                "type": "Image",
+                                "format": "image/jpeg",
+                                "height": 2000,
+                                "width": 1500,
+                                "service": [
+                                    {
+                                        "@context": "http://iiif.io/api/image/3/context.json",
+                                        "id": "https://example.org/iiif/image1",
+                                        "type": "ImageService3",
+                                        "profile": "level2"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
