@@ -8,7 +8,7 @@ from .utils.logger import logger
 
 LICENSE = [
     "license",
-    "license",
+    "licence",
     "lizenz",
     "rights",
     "droits",
@@ -59,9 +59,10 @@ class IIIFManifest:
         if not self.content:
             return "No manifest loaded"
 
-        if "license" in self.content:
-            lic = self.content.get("license")
-            return get_license_url(mono_val(lic))
+        for label in ["license", "rights"]:
+            if label in self.content:
+                lic = self.content.get(label)
+                return get_license_url(mono_val(lic))
 
         if "metadata" in self.content:
             for label in LICENSE:
@@ -72,7 +73,7 @@ class IIIFManifest:
                     if value := get_meta_value(meta, label):
                         return get_license_url(value)
 
-        attribution = self.content.get("attribution")
+        attribution = self.content.get("attribution", "")
         return get_license_url(mono_val(attribution))
 
     def get_resources(self) -> List:

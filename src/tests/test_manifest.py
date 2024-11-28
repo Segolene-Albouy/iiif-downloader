@@ -1,36 +1,6 @@
-import json
-import sys
-
 import pytest
-from pathlib import Path
-from unittest.mock import patch
 from ..iiif_download.manifest import IIIFManifest
-
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-GET_JSON_PATH = 'src.iiif_download.utils.get_json'
-
-
-@pytest.fixture
-def manifest_files():
-    """Paths to manifest test files."""
-    fixtures_dir = Path(__file__).parent / "fixtures"
-    return {
-        "v2": fixtures_dir / "manifest_v2.json",
-        "v3": fixtures_dir / "manifest_v3.json",
-        "test": fixtures_dir / "manifest_test.json"
-    }
-
-
-@pytest.fixture
-def mock_manifest():
-    """Factory fixture to create a mock IIIFManifest."""
-    def _create_mock(json_file):
-        with open(json_file) as f:
-            manifest_content = json.load(f)
-        manifest = IIIFManifest("https://example.org/manifest")
-        manifest.content = manifest_content
-        return manifest
-    return _create_mock
+from . import manifest_files, mock_manifest
 
 
 class TestManifest:
