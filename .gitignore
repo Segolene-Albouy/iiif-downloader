@@ -1,12 +1,66 @@
-venv/
-.idea/
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Coverage
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+cover/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+test-manifests.txt
 img/*
 log/*
-.DS_Store
+*.log
+temp/*
+src/tests/temp/*
+
+# Build
 dist/*
 build/*
 *.egg-info/*
 src/iiif_download.egg-info/*
-temp/*
-src/tests/temp/*
+
+.DS_Store

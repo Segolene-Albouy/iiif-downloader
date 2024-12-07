@@ -1,0 +1,24 @@
+# Documentation
+include LICENSE
+include README.md
+include CHANGELOG.md
+include requirements*.txt
+include *.txt
+
+# Configuration
+include pyproject.toml
+include setup.py
+include MANIFEST.in
+
+# Package data
+recursive-include src *.py
+recursive-include src/tests/fixtures *.json
+
+# Exclude
+global-exclude .env
+global-exclude .coverage
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.pyo
+global-exclude .DS_Store
+global-exclude .git*
