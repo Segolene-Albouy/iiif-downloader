@@ -1,9 +1,10 @@
 import argparse
 
-from src.iiif_download.downloader import IIIFDownloader
-from src.iiif_download.utils.logger import logger
+from .downloader import IIIFDownloader
+from .utils.logger import logger
 
-if __name__ == '__main__':
+
+def main():
     parser = argparse.ArgumentParser(description='Download IIIF manifest images')
     parser.add_argument('-f', '--file', type=str, required=True, help='File containing manifest URLs')
     parser.add_argument('-o', '--output', type=str, required=False, help='Path where to save downloaded images')
@@ -14,7 +15,7 @@ if __name__ == '__main__':
 
     if not manifests:
         logger.error("No manifests found in input file")
-        exit(1)
+        return 1
 
     downloader = IIIFDownloader(img_path=args.output)
 
@@ -23,3 +24,9 @@ if __name__ == '__main__':
             downloader.download_manifest(url, save_dir=None)
         except Exception as e:
             logger.error(f"Failed to process {url}", exception=e)
+
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())

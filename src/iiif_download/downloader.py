@@ -33,8 +33,6 @@ class IIIFDownloader:
         if not manifest.load():
             return False
 
-        # Create directory and save metadata
-        create_dir(manifest.manifest_dir)
         self.add_to_log(manifest.manifest_dir / "info.txt", manifest.license)
 
         # Get and download images
@@ -50,5 +48,23 @@ class IIIFDownloader:
             if not image.save():
                 logger.error(f"Failed to download image #{image.idx} ({image.sized_url()})")
                 continue
+
+        # TODO add image mapping
+        # all_img_mapping = []
+        # if manifest is not None:
+        #     console(f"Processing {self.manifest_url}...")
+        #     if not check_dir(self.manifest_dir_path) or True:
+        #         i = 1
+        #         for rsrc in get_iiif_resources(manifest):
+        #             console(rsrc)
+        #             is_downloaded, img_name, img_url = self.save_iiif_img(rsrc, i)
+        #             i += 1
+        #             if img_name is not None:
+        #                 all_img_mapping.append((img_name, img_url))
+        #             if is_downloaded:
+        #                 # Gallica is not accepting more than 5 downloads of >1000px per min
+        #                 time.sleep(12 if "gallica" in self.manifest_url else 0.25)
+        #                 time.sleep(self.sleep)
+        # return all_img_mapping
 
         return manifest

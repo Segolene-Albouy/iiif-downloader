@@ -10,7 +10,7 @@ class TestDownloader:
 
     # @pytest.mark.parametrize("version", ["v2", "v3", "test"])
     def test_info_file(self):
-        """Test that the downloader creates necessary directories."""
+        """Test that the downloader appends metadata to info.txt."""
         downloader = IIIFDownloader(img_path=TEMP_DIR)
         manifest_url = "https://example.org/manifest"
         manifest_dir = TEMP_DIR / "test_downloaded"

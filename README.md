@@ -1,11 +1,16 @@
 # Download images from IIIF manifests
 
+[![PyPI - Version](https://img.shields.io/pypi/v/iiif-download.svg)](https://pypi.org/project/iiif-download)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/iiif-download.svg)](https://pypi.org/project/iiif-download)
+
 This repository contains code to download images from IIIF manifests.
-It takes into account limitations and data specificities various institution.
+It takes into account limitations and data specificities from various institutions.
 
 ## Basic usage
 
-### Inside a project
+The configuration is stored in `iiif_download/config.py` and can be overriden by setting environment variables.
+
+### Inside a script
 
 ```python
 from iiif_download import IIIFDownloader, config 
@@ -23,7 +28,7 @@ downloader = IIIFDownloader(
     img_path="path/to/dir"  # surcharge config.img_dir
 )
 
-manifest = "https://bvmm.irht.cnrs.fr/iiif/24971/manifest"
+manifest = "https://example.org/manifest"
 
 # Download images from a manifest inside img_path/dir_name
 downloader.download_manifest(manifest, save_dir="dir_name")
@@ -41,11 +46,7 @@ source .env
 venv/bin/python run.py -f test-manifests.txt
 ```
 
-## Configuration
-
-The configuration is stored in `iiif_download/config.py` and can be overriden by setting environment variables.
-
-### Other usage
+## Metadata extraction
 
 ```python
 from iiif_download import IIIFManifest

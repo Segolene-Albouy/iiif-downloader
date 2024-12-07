@@ -75,6 +75,17 @@ class Logger:
         'end': '\033[0m'
     }
 
+    EMOJIS = {
+        'error': '🚨',
+        'warning': '⚠️',
+        'info': 'ℹ️',
+        'success': '✅',
+        'magenta': '🔮',
+        'cyan': '🪼',
+        'white': '🏳',
+        'black': '🏴',
+    }
+
     def __init__(self, log_dir: Union[str, Path]):
         """
         Initialize the logger with a directory for log files
@@ -87,6 +98,7 @@ class Logger:
 
         self.error_log = self.log_dir / "error.log"
         self.download_log = self.log_dir / "download_fails.log"
+        # TODO add log option in env
 
         # Setup logging
         self.logger = logging.getLogger("iiif-downloader")
@@ -111,14 +123,18 @@ class Logger:
         """Get the ANSI color code for a message type."""
         return self.COLORS.get(color, '')
 
-    def format_message(self, msg: Any, msg_type: str = 'info') -> str:
+    def get_emoji(self, color: str) -> str:
+        """Get the ANSI color code for a message type."""
+        return self.EMOJIS.get(color, '')
+
+    def format_message(self, *msg: Any, msg_type: str = 'info') -> str:
         """Format a message with timestamp and colors."""
         color = self.get_color(msg_type)
+        emoji = self.get_emoji(msg_type)
         timestamp = self._get_timestamp()
 
-        formatted_msg = pprint(msg)
-
-        return f"\n\n\n{timestamp}\n{color}{self.COLORS['bold']}{formatted_msg}{self.COLORS['end']}\n\n\n"
+        formatted = '\n'.join([f"{color}{self.COLORS['bold']}{pprint(m)}" for m in msg])
+        return f"\n\n\n{emoji} {timestamp}\n{color}{formatted}{self.COLORS['end']}\n\n\n"
 
     @staticmethod
     def format_exception(exception: Exception) -> str:
@@ -128,43 +144,47 @@ class Logger:
 
         return msg
 
-    def error(self, msg: Any = "🚨🚨🚨", exception: Optional[Exception] = None):
+    def error(self, *msg: Any, exception: Optional[Exception] = None):
         """
-        Log an error message and optionally an exception
+        🚨 Log an error message and optionally an exception
 
         Args:
             msg: Message to log
             exception: Optional exception to include in log
         """
-        error_msg = self.format_message(msg, 'error')
+        error_msg = self.format_message(*msg, msg_type='error')
         if exception:
             error_msg += self.format_exception(exception)
 
         self.logger.error(error_msg)
 
-    def warning(self, msg: Any = "⚠️⚠️⚠️"):
-        """Log a warning message."""
-        self.logger.warning(self.format_message(msg, 'warning'))
+    def warning(self, *msg: Any):
+        """⚠️ Log a warning message."""
+        self.logger.warning(self.format_message(*msg, msg_type='warning'))
 
-    def info(self, msg: Any = "ℹ️ℹ️ℹ️"):
-        """Log an info message."""
-        self.logger.info(self.format_message(msg, 'info'))
+    def info(self, *msg: Any):
+        """ℹ️ Log an info message."""
+        self.logger.info(self.format_message(*msg, msg_type='info'))
 
-    def magic(self, msg: Any = "🔮🔮🔮"):
-        self.logger.info(self.format_message(msg, 'magenta'))
+    def magic(self, *msg: Any):
+        """🔮 Log a magical message."""
+        self.logger.info(self.format_message(*msg, msg_type='magenta'))
 
-    def water(self, msg: Any = "🪼🪼🪼"):
-        self.logger.info(self.format_message(msg, 'cyan'))
+    def water(self, *msg: Any):
+        """🪼 Log a watery message."""
+        self.logger.info(self.format_message(*msg, msg_type='cyan'))
 
-    def white(self, msg: Any = "️🏳️🏳️️🏳️"):
-        self.logger.info(self.format_message(msg, 'white'))
+    def white(self, *msg: Any):
+        """🏳 Log a white message."""
+        self.logger.info(self.format_message(*msg, msg_type='white'))
 
-    def black(self, msg: Any = "️🏴️🏴🏴"):
-        self.logger.info(self.format_message(msg, 'black'))
+    def black(self, *msg: Any):
+        """️🏴 Log a black message."""
+        self.logger.info(self.format_message(*msg, msg_type='black'))
 
-    def success(self, msg: Any = "✅✅✅"):
-        """Log a success message."""
-        self.logger.info(self.format_message(msg, 'success'))
+    def success(self, *msg: Any):
+        """✅ Log a success message."""
+        self.logger.info(self.format_message(*msg, msg_type='success'))
 
     @staticmethod
     def progress(iterable: Iterable, desc: str = "", total: Optional[int] = None) -> tqdm:
