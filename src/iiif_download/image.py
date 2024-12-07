@@ -2,12 +2,13 @@ import os
 import time
 from io import BytesIO
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
+
 from PIL import Image as PILgrimage
 
-from .utils import save_img, sanitize_url, get_size, get_url_response
-from .utils.logger import logger
 from .config import config
+from .utils import get_size, get_url_response, sanitize_url, save_img
+from .utils.logger import logger
 
 
 class IIIFImage:
@@ -110,25 +111,39 @@ class IIIFImage:
         return f"{w},"
 
     def check(self) -> bool:
-        """Check if image exists with correct size."""
-        if not os.path.exists(self.save_dir / self.img_name):
+        """Check if the image exists with correct size constraints."""
+        img_path = self.save_dir / self.img_name
+
+        if not os.path.exists(img_path):
             return False
 
-        img = PILgrimage.open(self.save_dir / self.img_name)
+        img = PILgrimage.open(img_path)
+        img_height, img_width = img.height, img.width
+
         if self.max_dim is None:
-            return int(img.height) == self.height
-        # TODO manage the fact that sometimes the image original full dimension is bellow max_dim
-        return img.height == self.max_dim or img.width == self.max_dim
+            return (self.height is None or img_height == self.height) and (
+                self.width is None or img_width == self.width
+            )
+
+        if max(img_height, img_width) > self.max_dim:
+            return False
+
+        return self.min_dim is None or min(img_height, img_width) >= self.min_dim
 
     def process_response(self, response) -> bool:
         """Process and save image response."""
-        if 'image' not in response.headers.get('Content-Type', ''):
-            logger.warning(f"Incorrect MIME type ({response.headers.get('Content-Type', '')}) for {self.sized_url()}")
+        if "image" not in response.headers.get("Content-Type", ""):
+            logger.warning(
+                f"Incorrect MIME type ({response.headers.get('Content-Type', '')}) for {self.sized_url()}"
+            )
             try:
                 with open(self.save_dir / f"{self.img_name}.txt", "w") as f:
                     f.write(response.text)
             except Exception as e:
-                logger.error(f"Failed to save response content for {self.sized_url()}", exception=e)
+                logger.error(
+                    f"Failed to save response content for {self.sized_url()}",
+                    exception=e,
+                )
 
         try:
             img = PILgrimage.open(BytesIO(response.content))

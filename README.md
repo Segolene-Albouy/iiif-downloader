@@ -17,7 +17,7 @@ The configuration is stored in `iiif_download/config.py` and can be overriden by
 ### Inside a script
 
 ```python
-from iiif_download import IIIFDownloader, config 
+from iiif_download import IIIFDownloader, config
 
 # Override the default configuration
 config.max_size = 2500
@@ -43,7 +43,7 @@ downloader.download_manifest(manifest, save_dir="dir_name")
 # override specific variables
 export IIIF_BASE_DIR=custom/path/to/images
 export IIIF_MAX_SIZE=4000
-# or use .env 
+# or use .env
 source .env
 
 venv/bin/python run.py -f test-manifests.txt

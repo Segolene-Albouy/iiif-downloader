@@ -5,9 +5,15 @@ from .utils.logger import logger
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Download IIIF manifest images')
-    parser.add_argument('-f', '--file', type=str, required=True, help='File containing manifest URLs')
-    parser.add_argument('-o', '--output', type=str, required=False, help='Path where to save downloaded images')
+    parser = argparse.ArgumentParser(description="Download IIIF manifest images")
+    parser.add_argument("-f", "--file", type=str, required=True, help="File containing manifest URLs")
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        required=False,
+        help="Path where to save downloaded images",
+    )
     args = parser.parse_args()
 
     with open(args.file) as f:

@@ -1,7 +1,7 @@
 import os
 import pytest
 from pathlib import Path
-from ..iiif_download.config import Config
+from ...iiif_download.config import Config
 
 
 def test_config_attribute_types():
@@ -112,5 +112,6 @@ def test_config_directory_creation():
 
     # Cleanup
     import shutil
+
     shutil.rmtree(test_base)
     del os.environ["IIIF_BASE_DIR"]

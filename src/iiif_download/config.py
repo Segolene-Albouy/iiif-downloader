@@ -4,6 +4,7 @@ Configuration module for iiif_download package.
 This module handles all configurable parameters of the package,
 providing both default values and methods to override them.
 """
+
 import os
 from pathlib import Path
 from typing import Optional
@@ -26,10 +27,7 @@ class Config:
         # Network settings
         self._timeout = 30
         self._retry_attempts = 3
-        self._sleep_time = {
-            "default": 0.25,
-            "gallica": 12
-        }
+        self._sleep_time = {"default": 0.25, "gallica": 12}
 
         # Dev settings
         self._debug = False
@@ -73,10 +71,7 @@ class Config:
             self._retry_attempts = int(retries)
 
         if sleep_time := os.getenv("IIIF_SLEEP"):
-            self._sleep_time = {
-                "default": float(sleep_time),
-                "gallica": 12
-            }
+            self._sleep_time = {"default": float(sleep_time), "gallica": 12}
 
         if debug := os.getenv("IIIF_DEBUG"):
             self._debug = debug.lower() in ("true", "1", "yes")

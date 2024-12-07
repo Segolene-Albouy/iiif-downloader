@@ -1,19 +1,17 @@
-import pytest
 from unittest.mock import Mock, patch
 
-from . import manifest_files, TEMP_DIR
-from ..iiif_download.downloader import IIIFDownloader, IIIFManifest
+from ...iiif_download.downloader import IIIFDownloader, IIIFManifest
 
 
 class TestDownloader:
     """Test suite for IIIFDownloader class."""
 
     # @pytest.mark.parametrize("version", ["v2", "v3", "test"])
-    def test_info_file(self):
+    def test_info_file(self, temp_download_dir):
         """Test that the downloader appends metadata to info.txt."""
-        downloader = IIIFDownloader(img_dir=TEMP_DIR)
+        downloader = IIIFDownloader(img_dir=temp_download_dir)
         manifest_url = "https://example.org/manifest"
-        manifest_dir = TEMP_DIR / "test_downloaded"
+        manifest_dir = temp_download_dir / "test_downloaded"
         manifest_license = "http://creativecommons.org/licenses/by/4.0/"
 
         mock_manifest = Mock(spec=IIIFManifest)
@@ -25,7 +23,7 @@ class TestDownloader:
         mock_manifest.url = manifest_url
 
         # Make IIIFManifest return a mock manifest
-        with patch('src.iiif_download.downloader.IIIFManifest', return_value=mock_manifest):
+        with patch("src.iiif_download.downloader.IIIFManifest", return_value=mock_manifest):
             result = downloader.download_manifest(manifest_url)
             assert result is mock_manifest
             assert mock_manifest.load.called

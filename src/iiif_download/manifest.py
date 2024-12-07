@@ -1,9 +1,16 @@
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
-from .image import IIIFImage
 from .config import config
-from .utils import sanitize_str, get_json, get_id, get_license_url, get_meta_value, mono_val
+from .image import IIIFImage
+from .utils import (
+    get_id,
+    get_json,
+    get_license_url,
+    get_meta_value,
+    mono_val,
+    sanitize_str,
+)
 from .utils.logger import logger
 
 LICENSE = [
@@ -25,7 +32,10 @@ class IIIFManifest:
     def __init__(self, url: str, img_dir: Path = None, manifest_dir_name: str = None):
         self.url = url
         self.content: Optional[Dict[str, Any]] = None
-        self.manifest_dir = (Path(img_dir) if img_dir else config.img_dir) / (manifest_dir_name or self.get_dir_name())
+        self.manifest_dir = (Path(img_dir) if img_dir else config.img_dir) / (
+            manifest_dir_name or self.get_dir_name()
+        )
+        self.img_mapping = []
 
     def load(self) -> bool:
         """Load manifest content from URL."""
@@ -98,7 +108,7 @@ class IIIFManifest:
                         if resource := self.get_image_resource(sub_item):
                             resources.append(resource)
             except KeyError as e:
-                logger.error(f"Failed to extract images from manifest", exception=e)
+                logger.error("Failed to extract images from manifest", exception=e)
 
         return resources
 
@@ -106,12 +116,14 @@ class IIIFManifest:
         """Get all images from manifest."""
         images = []
         for i, resource in enumerate(self.get_resources()):
-            images.append(IIIFImage(
-                idx=i + 1,
-                img_id=get_id(resource["service"]),
-                resource=resource,
-                save_dir=self.manifest_dir
-            ))
+            images.append(
+                IIIFImage(
+                    idx=i + 1,
+                    img_id=get_id(resource["service"]),
+                    resource=resource,
+                    save_dir=self.manifest_dir,
+                )
+            )
         return images
 
     @staticmethod

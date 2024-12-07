@@ -4,10 +4,11 @@ import time
 import traceback
 from pathlib import Path
 from typing import Any, Iterable, Optional, Union
+
 from tqdm import tqdm
 
-from . import strip_tags
 from ..config import config
+from . import strip_tags
 
 
 def sanitize(v):
@@ -39,10 +40,7 @@ def pprint(o):
         except TypeError:
             try:
                 if isinstance(o, dict):
-                    sanitized = {
-                        str(k): sanitize(v)
-                        for k, v in o.items()
-                    }
+                    sanitized = {str(k): sanitize(v) for k, v in o.items()}
                 else:
                     sanitized = [sanitize(v) for v in o]
                 return json.dumps(sanitized, indent=4, sort_keys=True)
@@ -62,28 +60,28 @@ class Logger:
 
     # ANSI Color codes
     COLORS = {
-        'error': '\033[91m',  # red
-        'warning': '\033[93m',  # yellow
-        'info': '\033[94m',  # blue
-        'success': '\033[92m',  # green
-        'magenta': "\033[95m",
-        'cyan': "\033[96m",
-        'white': "\033[97m",
-        'black': '\033[90m',
-        'bold': '\033[1m',
-        'underline': '\033[4m',
-        'end': '\033[0m'
+        "error": "\033[91m",  # red
+        "warning": "\033[93m",  # yellow
+        "info": "\033[94m",  # blue
+        "success": "\033[92m",  # green
+        "magenta": "\033[95m",
+        "cyan": "\033[96m",
+        "white": "\033[97m",
+        "black": "\033[90m",
+        "bold": "\033[1m",
+        "underline": "\033[4m",
+        "end": "\033[0m",
     }
 
     EMOJIS = {
-        'error': '🚨',
-        'warning': '⚠️',
-        'info': 'ℹ️',
-        'success': '✅',
-        'magenta': '🔮',
-        'cyan': '🪼',
-        'white': '🏳',
-        'black': '🏴',
+        "error": "🚨",
+        "warning": "⚠️",
+        "info": "ℹ️",
+        "success": "✅",
+        "magenta": "🔮",
+        "cyan": "🪼",
+        "white": "🏳",
+        "black": "🏴",
     }
 
     def __init__(self, log_dir: Union[str, Path]):
@@ -121,19 +119,19 @@ class Logger:
 
     def get_color(self, color: str) -> str:
         """Get the ANSI color code for a message type."""
-        return self.COLORS.get(color, '')
+        return self.COLORS.get(color, "")
 
     def get_emoji(self, color: str) -> str:
         """Get the ANSI color code for a message type."""
-        return self.EMOJIS.get(color, '')
+        return self.EMOJIS.get(color, "")
 
-    def format_message(self, *msg: Any, msg_type: str = 'info') -> str:
+    def format_message(self, *msg: Any, msg_type: str = "info") -> str:
         """Format a message with timestamp and colors."""
         color = self.get_color(msg_type)
         emoji = self.get_emoji(msg_type)
         timestamp = self._get_timestamp()
 
-        formatted = '\n'.join([f"{color}{self.COLORS['bold']}{pprint(m)}" for m in msg])
+        formatted = "\n".join([f"{color}{self.COLORS['bold']}{pprint(m)}" for m in msg])
         return f"\n\n\n{emoji} {timestamp}\n{color}{formatted}{self.COLORS['end']}\n\n\n"
 
     @staticmethod
@@ -152,7 +150,7 @@ class Logger:
             msg: Message to log
             exception: Optional exception to include in log
         """
-        error_msg = self.format_message(*msg, msg_type='error')
+        error_msg = self.format_message(*msg, msg_type="error")
         if exception:
             error_msg += self.format_exception(exception)
 
@@ -160,31 +158,31 @@ class Logger:
 
     def warning(self, *msg: Any):
         """⚠️ Log a warning message."""
-        self.logger.warning(self.format_message(*msg, msg_type='warning'))
+        self.logger.warning(self.format_message(*msg, msg_type="warning"))
 
     def info(self, *msg: Any):
         """ℹ️ Log an info message."""
-        self.logger.info(self.format_message(*msg, msg_type='info'))
+        self.logger.info(self.format_message(*msg, msg_type="info"))
 
     def magic(self, *msg: Any):
         """🔮 Log a magical message."""
-        self.logger.info(self.format_message(*msg, msg_type='magenta'))
+        self.logger.info(self.format_message(*msg, msg_type="magenta"))
 
     def water(self, *msg: Any):
         """🪼 Log a watery message."""
-        self.logger.info(self.format_message(*msg, msg_type='cyan'))
+        self.logger.info(self.format_message(*msg, msg_type="cyan"))
 
     def white(self, *msg: Any):
         """🏳 Log a white message."""
-        self.logger.info(self.format_message(*msg, msg_type='white'))
+        self.logger.info(self.format_message(*msg, msg_type="white"))
 
     def black(self, *msg: Any):
         """️🏴 Log a black message."""
-        self.logger.info(self.format_message(*msg, msg_type='black'))
+        self.logger.info(self.format_message(*msg, msg_type="black"))
 
     def success(self, *msg: Any):
         """✅ Log a success message."""
-        self.logger.info(self.format_message(*msg, msg_type='success'))
+        self.logger.info(self.format_message(*msg, msg_type="success"))
 
     def progress(self, iterable: Iterable, desc: str = "", total: Optional[int] = None) -> tqdm:
         """
@@ -202,9 +200,9 @@ class Logger:
         return tqdm(
             iterable,
             total=total,
-            unit='image',
+            unit="image",
             ncols=100,
-            bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
+            bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]",
         )
 
     def log_failed_download(self, img_path: str, img_url: str):
@@ -215,7 +213,7 @@ class Logger:
             img_path: Path of the image that should have been downloaded
             img_url: URL that failed to be downloaded
         """
-        with open(self.download_log, 'a') as f:
+        with open(self.download_log, "a") as f:
             f.write(f"{img_path} {img_url}\n")
 
 

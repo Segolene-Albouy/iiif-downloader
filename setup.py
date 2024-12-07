@@ -1,11 +1,11 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="iiif-download",  # Changed to match desired pip install name
-    version="0.1.1",
+    version="0.1.2",
     author="Segolene-Albouy",
     author_email="segolene.albouy@gmail.com",
     description="A Python package to download images from IIIF manifests",
@@ -39,19 +39,14 @@ setup(
         "Pillow>=11.0.0",
         "requests>=2.32.0",
         "tqdm>=4.66.0",
-        "urllib3>=2.2.0"
+        "urllib3>=2.2.0",
     ],
     extras_require={
-        'dev': [
-            'pytest>=8.0.0',
-            'pytest-cov>=6.0.0',
-            'flake8>=7.0.0',
-            'black>=24.0.0'
-        ],
+        "dev": ["pytest>=8.0.0", "pytest-cov>=6.0.0", "flake8>=7.0.0", "black>=24.0.0"],
     },
     entry_points={
-        'console_scripts': [
-            'iiif-download=iiif_download.cli:main',
+        "console_scripts": [
+            "iiif-download=iiif_download.cli:main",
         ],
     },
 )

@@ -3,7 +3,7 @@ import re
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Union, List, Dict
+from typing import Dict, List, Union
 
 import requests
 from PIL import Image, ImageFile
@@ -14,7 +14,7 @@ from ..config import config
 def check_dir(path):
     path = Path(path)
     if not path.exists():
-        raise FileNotFoundError(f'{path.absolute()} does not exist')
+        raise FileNotFoundError(f"{path.absolute()} does not exist")
     return path
 
 
@@ -45,7 +45,7 @@ def save_img(
     max_dim=config.max_size,
     dpi=config.max_res,
     img_format="JPEG",
-    load_truncated=False
+    load_truncated=False,
 ):
     # if glob.glob(img_dir / img_filename):
     #     return False  # NOTE: maybe download again anyway because manifest / pdf might have changed
@@ -55,9 +55,7 @@ def save_img(
 
     try:
         if img.width > max_dim or img.height > max_dim:
-            img.thumbnail(
-                (max_dim, max_dim), Image.Resampling.LANCZOS
-            )  # Image.Resampling.LANCZOS
+            img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)  # Image.Resampling.LANCZOS
         img.save(img_dir / img_filename, format=img_format)
         return True
     except OSError as e:
@@ -82,10 +80,7 @@ def get_url_response(url):
         Response: The response object from the request.
     """
     headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) "
-            "Gecko/20100101 Firefox/102.0"
-        ),
+        "User-Agent": ("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) " "Gecko/20100101 Firefox/102.0"),
         # "Referer": url,  # Use the URL as referer; adjust if necessary
         # "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
     }
@@ -101,9 +96,7 @@ def get_json(url):
     except requests.exceptions.SSLError:
         requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += "HIGH:!DH:!aNULL"
         try:
-            requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += (
-                "HIGH:!DH:!aNULL"
-            )
+            requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += "HIGH:!DH:!aNULL"
         except AttributeError:
             # no pyopenssl support used / needed / available
             pass
@@ -228,20 +221,24 @@ def get_license_url(original_lic):
     version = get_version_nb(normalized)
 
     license_map = {
-        ("publicdomain", "cc0", "pdm"): "https://creativecommons.org/publicdomain/mark/1.0/",
+        (
+            "publicdomain",
+            "cc0",
+            "pdm",
+        ): "https://creativecommons.org/publicdomain/mark/1.0/",
         ("byncsa", "noncommercialsharealike"): f"by-nc-sa/{version}/",
         ("byncnd", "noncommercialnoderiv"): f"by-nc-nd/{version}/",
         ("bysa", "sharealike"): f"by-sa/{version}/",
         ("bync", "noncommercial"): f"by-nc/{version}/",
         ("bynd", "noderiv"): f"by-nd/{version}/",
-        ("by",): f"by/{version}/"
+        ("by",): f"by/{version}/",
     }
 
     for terms, url in license_map.items():
         if substrs_in_str(normalized, terms):
             return f"https://creativecommons.org/licenses/{url}" if "publicdomain" not in terms else url
 
-    return lic or 'No license information found'
+    return lic or "No license information found"
 
 
 def mono_val(val: Union[str, int, List, Dict]) -> Union[str, int, None]:

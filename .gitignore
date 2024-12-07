@@ -55,7 +55,7 @@ img/*
 log/*
 *.log
 temp/*
-src/tests/temp/*
+src/iiif_download/tests/temp/*
 
 # Build
 dist/*
