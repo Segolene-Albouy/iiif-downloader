@@ -17,7 +17,7 @@ def main():
         logger.error("No manifests found in input file")
         return 1
 
-    downloader = IIIFDownloader(img_path=args.output)
+    downloader = IIIFDownloader(img_dir=args.output)
 
     for url in logger.progress(manifests, desc="Processing manifests"):
         try:

@@ -13,9 +13,7 @@ class Config:
     """Global configuration for the iiif_download package."""
 
     def __init__(self):
-        # Default paths relative to user's home directory
         self._base_dir = Path(__file__).resolve().parent.parent.parent
-        # self._base_dir = Path.home() / ".iiif_download"
         self._img_dir = self._base_dir / "img"
         self._log_dir = self._base_dir / "log"
 

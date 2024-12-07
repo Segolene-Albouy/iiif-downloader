@@ -51,8 +51,9 @@ class IIIFImage:
     def save(self, re_download: bool = False) -> bool:
         """Download and save the image."""
         # Check if already downloaded
-        if not re_download and self.check():
-            return True
+        if not re_download:
+            if self.check():
+                return True
 
         self.size = self.get_max_size()
         return self.download()

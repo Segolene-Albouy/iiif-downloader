@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=45", "wheel"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.black]
@@ -27,4 +27,4 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:"]
 show_missing = true
-fail_under = 40
+fail_under = 50

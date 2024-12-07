@@ -40,14 +40,14 @@ def sanitize_str(string):
 def save_img(
     img,
     img_filename,
-    img_path=config.img_dir,
+    img_dir=config.img_dir,
     error_msg="Failed to save img",
     max_dim=config.max_size,
     dpi=config.max_res,
     img_format="JPEG",
     load_truncated=False
 ):
-    # if glob.glob(img_path / img_filename):
+    # if glob.glob(img_dir / img_filename):
     #     return False  # NOTE: maybe download again anyway because manifest / pdf might have changed
 
     # truncated files are downloaded and missing bytes are replaced by a gray area
@@ -58,7 +58,7 @@ def save_img(
             img.thumbnail(
                 (max_dim, max_dim), Image.Resampling.LANCZOS
             )  # Image.Resampling.LANCZOS
-        img.save(img_path / img_filename, format=img_format)
+        img.save(img_dir / img_filename, format=img_format)
         return True
     except OSError as e:
         error = f"{e}"

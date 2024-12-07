@@ -11,7 +11,7 @@ class TestDownloader:
     # @pytest.mark.parametrize("version", ["v2", "v3", "test"])
     def test_info_file(self):
         """Test that the downloader appends metadata to info.txt."""
-        downloader = IIIFDownloader(img_path=TEMP_DIR)
+        downloader = IIIFDownloader(img_dir=TEMP_DIR)
         manifest_url = "https://example.org/manifest"
         manifest_dir = TEMP_DIR / "test_downloaded"
         manifest_license = "http://creativecommons.org/licenses/by/4.0/"
@@ -43,7 +43,7 @@ class TestDownloader:
 
     # def test_image_download_count(self, manifest_files, mock_manifest):
     #     """Test that all images from manifest are downloaded."""
-    #     downloader = IIIFDownloader(img_path=TEMP_DIR)
+    #     downloader = IIIFDownloader(img_dir=TEMP_DIR)
     #
     #     with patch('src.iiif_download.manifest.IIIFManifest') as mock:
     #         # Use our mock manifest with one image
@@ -62,7 +62,7 @@ class TestDownloader:
     #
     # def test_failed_download_logging(self, manifest_files, mock_manifest):
     #     """Test that failed downloads are logged in info.txt."""
-    #     downloader = IIIFDownloader(img_path=TEMP_DIR)
+    #     downloader = IIIFDownloader(img_dir=TEMP_DIR)
     #
     #     with patch('src.iiif_download.manifest.IIIFManifest') as mock:
     #         manifest = mock_manifest(manifest_files["v2"])
@@ -85,7 +85,7 @@ class TestDownloader:
 
 # def test_info_file_with_images(self):
 #     """Test manifest download with images."""
-#     downloader = IIIFDownloader(img_path=TEMP_DIR)
+#     downloader = IIIFDownloader(img_dir=TEMP_DIR)
 #     manifest_url = "https://example.org/manifest"
 #     manifest_dir = TEMP_DIR / "example.org"
 #     manifest_license = "http://creativecommons.org/licenses/by/4.0/"

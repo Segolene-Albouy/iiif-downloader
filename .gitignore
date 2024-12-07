@@ -4,3 +4,9 @@ __pycache__/
 img/*
 log/*
 .DS_Store
+dist/*
+build/*
+*.egg-info/*
+src/iiif_download.egg-info/*
+temp/*
+src/tests/temp/*

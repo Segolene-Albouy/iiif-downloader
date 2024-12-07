@@ -11,8 +11,8 @@ from .utils.logger import logger
 class IIIFDownloader:
     """Manages the download of IIIF manifests and their images."""
 
-    def __init__(self, img_path: Optional[Path] = None):
-        self.img_path = img_path
+    def __init__(self, img_dir: Optional[Path | str] = None):
+        self.img_dir = img_dir
 
     @staticmethod
     def add_to_log(log_file, msg: str, mode="a"):
@@ -20,11 +20,10 @@ class IIIFDownloader:
         with open(log_file, mode) as f:
             f.write(f"{msg}\n")
 
-    # TODO allow downloading from json file
-    def download_manifest(self, url: str, save_dir: Optional[Path] = None) -> bool | IIIFManifest:
+    def download_manifest(self, url: str, save_dir: Optional[Path | str] = None) -> bool | IIIFManifest:
         """Download a complete manifest and all its images."""
         url = unquote(url)
-        manifest = IIIFManifest(url, img_dir=self.img_path, manifest_dir_name=save_dir)
+        manifest = IIIFManifest(url, img_dir=self.img_dir, manifest_dir_name=save_dir)
 
         # Create directory and save metadata
         create_dir(manifest.manifest_dir)
@@ -41,7 +40,8 @@ class IIIFDownloader:
             logger.warning(f"No images found in manifest {url}")
             return manifest
 
-        for i, image in enumerate(logger.progress(images, desc=f"Downloading {url}"), start=1):
+        logger.info(f"Downloading {len(images)} images from {url} inside {manifest.manifest_dir}")
+        for i, image in enumerate(logger.progress(images, desc=f"Downloading..."), start=1):
             if config.debug and i > 5:
                 break
 

@@ -6,6 +6,10 @@
 This repository contains code to download images from IIIF manifests.
 It takes into account limitations and data specificities from various institutions.
 
+```bash
+pip install iiif-download
+```
+
 ## Basic usage
 
 The configuration is stored in `iiif_download/config.py` and can be overriden by setting environment variables.
@@ -24,13 +28,12 @@ downloader = IIIFDownloader()
 
 # or override the global config for a specific downloader
 downloader = IIIFDownloader(
-    max_dim=2000,  # surcharge config.max_size
-    img_path="path/to/dir"  # surcharge config.img_dir
+    img_dir="path/to/dir"  # surcharge config.img_dir
 )
 
 manifest = "https://example.org/manifest"
 
-# Download images from a manifest inside img_path/dir_name
+# Download images from a manifest inside img_dir/dir_name
 downloader.download_manifest(manifest, save_dir="dir_name")
 ```
 
@@ -53,7 +56,7 @@ from iiif_download import IIIFManifest
 
 manifest = IIIFManifest("https://example.org/manifest")
 manifest.load()
-lic = manifest.licence
+lic = manifest.license
 author = manifest.get_meta("author")
 images = manifest.get_images()
 ```

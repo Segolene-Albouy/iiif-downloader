@@ -186,8 +186,7 @@ class Logger:
         """✅ Log a success message."""
         self.logger.info(self.format_message(*msg, msg_type='success'))
 
-    @staticmethod
-    def progress(iterable: Iterable, desc: str = "", total: Optional[int] = None) -> tqdm:
+    def progress(self, iterable: Iterable, desc: str = "", total: Optional[int] = None) -> tqdm:
         """
         Create a progress bar for an iteration
 
@@ -199,12 +198,12 @@ class Logger:
         Returns:
             tqdm: Progress bar object
         """
+        self.logger.info(desc)
         return tqdm(
             iterable,
-            desc=desc,
             total=total,
-            unit='img',
-            ncols=80,
+            unit='image',
+            ncols=100,
             bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
         )
 
