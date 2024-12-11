@@ -20,7 +20,9 @@ class IIIFDownloader:
         with open(log_file, mode) as f:
             f.write(f"{msg}\n")
 
-    def download_manifest(self, url: str, save_dir: Optional[Union[Path, str]] = None) -> bool | IIIFManifest:
+    def download_manifest(
+        self, url: str, save_dir: Optional[Union[Path, str]] = None
+    ) -> Union[bool, IIIFManifest]:
         """Download a complete manifest and all its images."""
         url = unquote(url)
         manifest = IIIFManifest(url, img_dir=self.img_dir, manifest_dir_name=save_dir)
