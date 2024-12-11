@@ -2,6 +2,7 @@
 
 [![PyPI - Version](https://img.shields.io/pypi/v/iiif-download.svg)](https://pypi.org/project/iiif-download)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/iiif-download.svg)](https://pypi.org/project/iiif-download)
+![Test Status](https://img.shields.io/github/actions/workflow/status/Segolene-Albouy/iiif-download/test.yml?branch=main)
 
 This repository contains code to download images from IIIF manifests.
 It takes into account limitations and data specificities from various institutions.
