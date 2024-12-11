@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from urllib.parse import unquote
 
 from .config import config
@@ -11,7 +11,7 @@ from .utils.logger import logger
 class IIIFDownloader:
     """Manages the download of IIIF manifests and their images."""
 
-    def __init__(self, img_dir: Optional[Path | str] = None):
+    def __init__(self, img_dir: Optional[Union[Path, str]] = None):
         self.img_dir = img_dir
 
     @staticmethod
@@ -20,7 +20,7 @@ class IIIFDownloader:
         with open(log_file, mode) as f:
             f.write(f"{msg}\n")
 
-    def download_manifest(self, url: str, save_dir: Optional[Path | str] = None) -> bool | IIIFManifest:
+    def download_manifest(self, url: str, save_dir: Optional[Union[Path, str]] = None) -> bool | IIIFManifest:
         """Download a complete manifest and all its images."""
         url = unquote(url)
         manifest = IIIFManifest(url, img_dir=self.img_dir, manifest_dir_name=save_dir)
