@@ -1,0 +1,47 @@
+# LEARN MORE https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/about-issue-and-pull-request-templates
+# FIND MORE TEMPLATES: https://github.com/stevemao/github-issue-templates
+name: "🐛 Bug Report"
+description: Create a new ticket for a bug.
+title: "🐛 [BUG] - <title>"
+labels: [
+  "bug"
+]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: Please enter an explicit description of your issue
+      placeholder: Short and explicit description of your incident...
+    validations:
+      required: true
+  - type: textarea
+    id: reprod
+    attributes:
+      label: "Reproduction steps"
+      description: Please enter an explicit description of your issue
+      render: bash
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Logs"
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: bash
+    validations:
+      required: false
+  - type: dropdown
+    id: python-version
+    attributes:
+      label: "Python version"
+      description: What python version are you using?
+      multiple: true
+      options:
+        - Python 3.9
+        - Python 3.10
+        - Python 3.11
+        - Python 3.12
+        - Other
+    validations:
+      required: false
