@@ -4,6 +4,7 @@ include README.md
 include CHANGELOG.md
 include requirements*.txt
 include *.txt
+include *.yaml
 
 # Configuration
 include pyproject.toml
@@ -12,7 +13,7 @@ include MANIFEST.in
 
 # Package data
 recursive-include src *.py
-recursive-include src/tests/fixtures *.json
+recursive-include src *.json
 
 # Exclude
 global-exclude .env

@@ -12,7 +12,10 @@ class IIIFDownloader:
     """Manages the download of IIIF manifests and their images."""
 
     def __init__(self, img_dir: Optional[Union[Path, str]] = None):
-        self.img_dir = img_dir
+        if img_dir:
+            config.img_dir = Path(img_dir)
+
+        self.img_dir = config.img_dir
 
     @staticmethod
     def add_to_log(log_file, msg: str, mode="a"):
@@ -25,7 +28,7 @@ class IIIFDownloader:
     ) -> Union[bool, IIIFManifest]:
         """Download a complete manifest and all its images."""
         url = unquote(url)
-        manifest = IIIFManifest(url, img_dir=self.img_dir, manifest_dir_name=save_dir)
+        manifest = IIIFManifest(url, manifest_dir_name=save_dir)
 
         # Create directory and save metadata
         create_dir(manifest.manifest_dir)

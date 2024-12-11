@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from .config import config
 from .image import IIIFImage
@@ -34,12 +34,24 @@ class IIIFManifest:
     """
     img_mapping: Dict[str, str] = {}
 
-    def __init__(self, url: str, img_dir: Path = None, manifest_dir_name: str = None):
+    def __init__(self, url: str, manifest_dir_name: Optional[Union[Path, str]] = None):
         self.url = url
         self.content: Optional[Dict[str, Any]] = None
-        self.manifest_dir: Path = (Path(img_dir) if img_dir else config.img_dir) / (
-            manifest_dir_name or self.get_dir_name()
-        )
+        self.manifest_dir: Path = self._manifest_dir(manifest_dir_name)
+
+    @staticmethod
+    def _manifest_dir(manifest_dir_name: Optional[Union[Path, str]] = None) -> Path:
+        if manifest_dir_name:
+            manifest_dir_name = Path(manifest_dir_name)
+            return (
+                manifest_dir_name if manifest_dir_name.is_absolute() else config.img_dir / manifest_dir_name
+            )
+        return config.img_dir
+
+    @property
+    def uid(self) -> str:
+        """Generate a directory name from manifest URL."""
+        return sanitize_str(self.url).replace("manifest", "").replace("json", "")
 
     def load(self) -> bool:
         """Load manifest content from URL."""
@@ -137,7 +149,3 @@ class IIIFManifest:
             return image_data.get("resource") or image_data.get("body")
         except KeyError:
             return None
-
-    def get_dir_name(self) -> str:
-        """Generate a directory name from manifest URL."""
-        return sanitize_str(self.url).replace("manifest", "").replace("json", "")
