@@ -29,13 +29,17 @@ LICENSE = [
 class IIIFManifest:
     """Represents a IIIF manifest with its metadata and image list."""
 
+    """
+    Mapping of all image names to their URLs.
+    """
+    img_mapping: dict[str, str] = {}
+
     def __init__(self, url: str, img_dir: Path = None, manifest_dir_name: str = None):
         self.url = url
-        self.content: Optional[Dict[str, Any]] = None
-        self.manifest_dir = (Path(img_dir) if img_dir else config.img_dir) / (
+        self.content: Optional[dict[str, Any]] = None
+        self.manifest_dir: Path = (Path(img_dir) if img_dir else config.img_dir) / (
             manifest_dir_name or self.get_dir_name()
         )
-        self.img_mapping = []
 
     def load(self) -> bool:
         """Load manifest content from URL."""

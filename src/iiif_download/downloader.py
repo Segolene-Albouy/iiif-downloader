@@ -40,7 +40,7 @@ class IIIFDownloader:
             logger.warning(f"No images found in manifest {url}")
             return manifest
 
-        img_mapping = []
+        img_mapping = {}
 
         logger.info(f"Downloading {len(images)} images from {url} inside {manifest.manifest_dir}")
         for i, image in enumerate(logger.progress(images, desc="Downloading..."), start=1):
@@ -51,7 +51,7 @@ class IIIFDownloader:
                 logger.error(f"Failed to download image #{image.idx} ({image.sized_url()})")
                 continue
 
-            img_mapping.append((image.img_name, image.sized_url()))
+            img_mapping[image.img_name] = image.sized_url()
 
         manifest.img_mapping = img_mapping
 

@@ -111,7 +111,11 @@ class IIIFImage:
         return f"{w},"
 
     def check(self) -> bool:
-        """Check if the image exists with correct size constraints."""
+        """
+        Check if the image is already downloaded and has the correct dimensions.
+        Returns:
+            True if the image exists and has the correct dimensions, False otherwise
+        """
         img_path = self.save_dir / self.img_name
 
         if not os.path.exists(img_path):
