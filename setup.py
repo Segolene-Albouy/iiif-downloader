@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="iiif-download",  # Changed to match desired pip install name
-    version="0.1.3",
+    version="0.1.4",
     author="Segolene-Albouy",
     author_email="segolene.albouy@gmail.com",
     description="A Python package to download images from IIIF manifests",
@@ -40,6 +40,8 @@ setup(
         "requests>=2.32.0",
         "tqdm>=4.66.0",
         "urllib3>=2.2.0",
+        "aiohttp>=3.10",
+        "aiofiles>=24.1.0",
     ],
     extras_require={
         "dev": ["pytest>=8.0.0", "pytest-cov>=6.0.0", "flake8>=7.0.0", "black>=24.0.0"],

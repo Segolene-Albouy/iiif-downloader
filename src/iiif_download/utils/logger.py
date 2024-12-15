@@ -1,14 +1,15 @@
 import json
 import logging
+import random
 import time
 import traceback
+from functools import wraps
 from pathlib import Path
 from typing import Any, Iterable, Optional, Union
 
 from tqdm import tqdm
 
 from ..config import config
-from . import strip_tags
 
 
 def sanitize(v):
@@ -29,6 +30,8 @@ def sanitize(v):
 def pprint(o):
     if isinstance(o, str):
         if "html" in o:
+            from . import strip_tags
+
             return strip_tags(o)[:500]
         try:
             return json.dumps(json.loads(o), indent=4, sort_keys=True)
@@ -94,23 +97,25 @@ class Logger:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
+        self.compact = False
+
         self.error_log = self.log_dir / "error.log"
         self.download_log = self.log_dir / "download_fails.log"
-        # TODO add log option in env
 
         # Setup logging
         self.logger = logging.getLogger("iiif-downloader")
         self.logger.setLevel(logging.INFO)
 
         # Write errors in log file
-        fh = logging.FileHandler(self.error_log)
-        fh.setLevel(logging.ERROR)
-        self.logger.addHandler(fh)
+        if config.is_logged:
+            fh = logging.FileHandler(self.error_log)
+            fh.setLevel(logging.ERROR)
+            self.logger.addHandler(fh)
 
-        # Only write info messages to console
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        self.logger.addHandler(ch)
+            # Only write info messages to console
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.INFO)
+            self.logger.addHandler(ch)
 
     @staticmethod
     def _get_timestamp() -> str:
@@ -132,7 +137,10 @@ class Logger:
         timestamp = self._get_timestamp()
 
         formatted = "\n".join([f"{color}{self.COLORS['bold']}{pprint(m)}" for m in msg])
-        return f"\n\n\n{emoji} {timestamp}\n{color}{formatted}{self.COLORS['end']}\n\n\n"
+        if self.compact:
+            return f"\n{emoji} {timestamp}{color}{formatted}{self.COLORS['end']}"
+
+        return f"\n\n\n{emoji} {timestamp}\n{color}{formatted}{self.COLORS['end']}\n\n\n"
 
     @staticmethod
     def format_exception(exception: Exception) -> str:
@@ -155,6 +163,11 @@ class Logger:
             error_msg += self.format_exception(exception)
 
         self.logger.error(error_msg)
+
+    def log(self, *msg: Any, msg_type: Optional[str] = None):
+        """Log a message with a given type."""
+        msg_type = msg_type or random.choice(list(self.COLORS.keys()))
+        self.logger.info(self.format_message(*msg, msg_type=msg_type))
 
     def warning(self, *msg: Any):
         """⚠️ Log a warning message."""
@@ -219,3 +232,26 @@ class Logger:
 
 # Create a global logger instance
 logger = Logger(config.log_dir)
+
+
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+
+        if execution_time < 0.1:
+            msg_type = "success"
+        elif execution_time < 0.5:
+            msg_type = "info"
+        elif execution_time < 1:
+            msg_type = "warning"
+        else:
+            msg_type = "error"
+
+        logger.log(f"\n[{func.__name__}]: {execution_time:.3f} secondes", msg_type=msg_type)
+        return result
+
+    return wrapper

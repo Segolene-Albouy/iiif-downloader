@@ -29,7 +29,7 @@ downloader = IIIFDownloader()
 
 # or override the global config for a specific downloader
 downloader = IIIFDownloader(
-    img_dir="path/to/dir"  # surcharge config.img_dir
+    img_dir="path/to/dir"  # surcharge any global attribute
 )
 
 manifest = "https://example.org/manifest"
@@ -47,7 +47,9 @@ export IIIF_MAX_SIZE=4000
 # or use .env
 source .env
 
-venv/bin/python run.py -f test-manifests.txt
+iiif-download https://example.org/manifest
+iiif-download -f test-manifests.txt
+iiif-download -d custom/path/to/images
 ```
 
 ## Metadata extraction

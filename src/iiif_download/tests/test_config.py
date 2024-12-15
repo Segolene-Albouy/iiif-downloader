@@ -12,14 +12,12 @@ def test_config_attribute_types():
     assert isinstance(config.max_size, int)
     assert isinstance(config.min_size, int)
     assert isinstance(config.max_res, int)
-    assert isinstance(config.timeout, int)
     assert isinstance(config.retry_attempts, int)
 
     # Test that numeric values are positive
     assert config.max_size > 0, "max_size should be positive"
     assert config.min_size > 0, "min_size should be positive"
     assert config.max_res > 0, "max_res should be positive"
-    assert config.timeout > 0, "timeout should be positive"
     assert config.retry_attempts > 0, "retry_attempts should be positive"
 
     # Test boolean attributes
@@ -65,18 +63,18 @@ def test_config_value_constraints():
         config.min_size = 1500
 
     # Test path setters with invalid values
-    with pytest.raises(TypeError, match="Path must be Path or string"):
+    with pytest.raises(TypeError, match="path must be Path or string"):
         config.img_dir = 123
 
-    with pytest.raises(TypeError, match="Path must be Path or string"):
+    with pytest.raises(TypeError, match="path must be Path or string"):
         config.log_dir = 123
 
     # Test sleep time validation
     with pytest.raises(ValueError, match="Sleep time must be positive"):
-        config.set_sleep_time("default", -1)
+        config.set_sleep_time(-1, "default")
 
     with pytest.raises(TypeError, match="Sleep time must be a number"):
-        config.set_sleep_time("default", "invalid")
+        config.set_sleep_time("invalid")
 
 
 def test_config_env_override():

@@ -3,14 +3,15 @@ import re
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
+import aiofiles
 import requests
-from PIL import Image, ImageFile
 
-from ..config import config
+from .logger import timer
 
 
+@timer
 def check_dir(path):
     path = Path(path)
     if not path.exists():
@@ -35,59 +36,6 @@ def sanitize_url(url: str, safe: str = "/:=?&#") -> str:
 
 def sanitize_str(string):
     return string.replace("/", "").replace(".", "").replace("https:", "").replace("www", "").replace(" ", "_")
-
-
-def save_img(
-    img,
-    img_filename,
-    img_dir=config.img_dir,
-    error_msg="Failed to save img",
-    max_dim=config.max_size,
-    dpi=config.max_res,
-    img_format="JPEG",
-    load_truncated=False,
-):
-    # if glob.glob(img_dir / img_filename):
-    #     return False  # NOTE: maybe download again anyway because manifest / pdf might have changed
-
-    # truncated files are downloaded and missing bytes are replaced by a gray area
-    ImageFile.LOAD_TRUNCATED_IMAGES = load_truncated
-
-    try:
-        if img.width > max_dim or img.height > max_dim:
-            img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)  # Image.Resampling.LANCZOS
-        img.save(img_dir / img_filename, format=img_format)
-        return True
-    except OSError as e:
-        error = f"{e}"
-        if "image file is truncated" in error:
-            missing_bytes = error[25:].split(" ")[0]
-            raise OSError(missing_bytes)
-
-        raise OSError(f"[save_img] {error_msg}:\n{e}")
-    except Exception as e:
-        raise f"[save_img] {error_msg}:\n{e}"
-
-
-def get_url_response(url):
-    """
-    Fetch the response from a URL, handling headers, cookies, and other server requirements.
-
-    Args:
-        url (str): The URL to fetch.
-
-    Returns:
-        Response: The response object from the request.
-    """
-    headers = {
-        "User-Agent": ("Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) " "Gecko/20100101 Firefox/102.0"),
-        # "Referer": url,  # Use the URL as referer; adjust if necessary
-        # "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
-    }
-
-    session = requests.Session()
-    session.headers.update(headers)
-    return session.get(url, stream=True)
 
 
 def get_json(url):
@@ -311,3 +259,15 @@ def get_meta_value(metadatum, label: str):
     if meta_label not in [label, label.capitalize(), label.lower(), f"@{label}"]:
         return None
     return get_meta(metadatum, "value")
+
+
+def write_to_file(path: Path, content: str, mode: Optional[str] = "w"):
+    """Thread-safe file writing."""
+    with open(path, mode) as f:
+        f.write(content)
+
+
+async def write_chunks(file_path, response):
+    async with aiofiles.open(file_path, mode="wb") as file:
+        async for chunk in response.content.iter_chunked(8192):
+            await file.write(chunk)

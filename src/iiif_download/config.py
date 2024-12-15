@@ -6,6 +6,7 @@ providing both default values and methods to override them.
 """
 
 import os
+from asyncio import Semaphore
 from pathlib import Path
 from typing import Optional
 
@@ -25,13 +26,15 @@ class Config:
         self._allow_truncation = False
 
         # Network settings
-        self._timeout = 30
         self._retry_attempts = 3
-        self._sleep_time = {"default": 0.25, "gallica": 12}
+        self._sleep_time = {"default": 0.05, "gallica": 12}
+        self._semaphore = Semaphore(5)
 
         # Dev settings
         self._debug = False
+        self._is_logged = True
         self._save_manifest = False
+        self._user_agent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0"
 
         # Initialize from environment variables if present
         self._load_from_env()
@@ -47,6 +50,7 @@ class Config:
             self._log_dir = self._base_dir / "log"
 
         if dir_name := os.getenv("IIIF_IMG_DIR"):
+            # TODO if img_dir is absolute, do not put it inside base_dir
             self._img_dir = self._base_dir / dir_name
 
         if dir_name := os.getenv("IIIF_LOG_DIR"):
@@ -64,9 +68,6 @@ class Config:
         if truncation := os.getenv("IIIF_ALLOW_TRUNCATION"):
             self._allow_truncation = truncation.lower() in ("true", "1", "yes")
 
-        if timeout := os.getenv("IIIF_TIMEOUT"):
-            self._timeout = int(timeout)
-
         if retries := os.getenv("IIIF_RETRY_ATTEMPTS"):
             self._retry_attempts = int(retries)
 
@@ -79,10 +80,26 @@ class Config:
         if save := os.getenv("IIIF_SAVE_MANIFEST"):
             self._save_manifest = save.lower() in ("true", "1", "yes")
 
+        # TODO add is_logged, semaphore, user_agent
+
     def _create_dirs(self):
         """Create necessary directories if they don't exist."""
         self._img_dir.mkdir(parents=True, exist_ok=True)
         self._log_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def base_dir(self) -> Path:
+        # TODO maybe delete ?, by default the base_dir should be
+        #  the current dir where the user executes python
+        """Base directory for logs and images"""
+        return self._base_dir
+
+    @base_dir.setter
+    def base_dir(self, path):
+        if not isinstance(path, (str, Path)):
+            raise TypeError("path must be Path or string")
+        self._base_dir = Path(path)
+        self._base_dir.mkdir(parents=True, exist_ok=True)
 
     @property
     def img_dir(self) -> Path:
@@ -92,7 +109,7 @@ class Config:
     @img_dir.setter
     def img_dir(self, path):
         if not isinstance(path, (str, Path)):
-            raise TypeError("Path must be Path or string")
+            raise TypeError("path must be Path or string")
         self._img_dir = Path(path)
         self._img_dir.mkdir(parents=True, exist_ok=True)
 
@@ -104,7 +121,7 @@ class Config:
     @log_dir.setter
     def log_dir(self, path: Path):
         if not isinstance(path, (str, Path)):
-            raise TypeError("Path must be Path or string")
+            raise TypeError("path must be Path or string")
         self._log_dir = Path(path)
         self._log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -146,18 +163,6 @@ class Config:
         self._max_res = value
 
     @property
-    def timeout(self) -> int:
-        """Timeout in seconds for network requests."""
-        # TODO use
-        return self._timeout
-
-    @timeout.setter
-    def timeout(self, value: int):
-        if value < 0:
-            raise ValueError("Timeout must be positive")
-        self._timeout = value
-
-    @property
     def retry_attempts(self) -> int:
         """Number of retry attempts for failed downloads."""
         # TODO use
@@ -174,7 +179,7 @@ class Config:
         """Sleep time between requests for different providers."""
         return self._sleep_time.copy()
 
-    def set_sleep_time(self, provider: str, value: float) -> None:
+    def set_sleep_time(self, value: float, provider: str = "default") -> None:
         """
         Set sleep time for a specific provider.
         """
@@ -192,6 +197,16 @@ class Config:
         return self._sleep_time["default"]
 
     @property
+    def semaphore(self) -> Semaphore:
+        return self._semaphore
+
+    @semaphore.setter
+    def semaphore(self, value: int):
+        if value < 0:
+            raise ValueError("Semaphore value must be positive")
+        self._semaphore = Semaphore(value)
+
+    @property
     def debug(self) -> bool:
         """Enable debug mode."""
         return self._debug
@@ -201,6 +216,27 @@ class Config:
         if not isinstance(value, bool):
             raise TypeError("Debug must be a boolean")
         self._debug = value
+
+    @property
+    def user_agent(self) -> str:
+        return self._user_agent
+
+    @user_agent.setter
+    def user_agent(self, value: str):
+        if not isinstance(value, str):
+            raise TypeError("User agent must be a string in the format 'Browser/V. (OS) Platform/V.'")
+        self._user_agent = value
+
+    @property
+    def is_logged(self) -> bool:
+        """Save logs to file."""
+        return self._is_logged
+
+    @is_logged.setter
+    def is_logged(self, value: bool):
+        if not isinstance(value, bool):
+            raise TypeError("is_logged must be a boolean")
+        self._is_logged = value
 
     @property
     def save_manifest(self) -> bool:

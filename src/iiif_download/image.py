@@ -1,13 +1,13 @@
 import os
 import time
-from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+import aiohttp
 from PIL import Image as PILgrimage
 
 from .config import config
-from .utils import get_size, get_url_response, sanitize_url, save_img
+from .utils import get_size, sanitize_url, write_chunks
 from .utils.logger import logger
 
 
@@ -27,6 +27,7 @@ class IIIFImage:
         self.url = sanitize_url(img_id.replace("full/full/0/default.jpg", ""))
 
         self.resource = resource
+        # TODO add possibility for custom prefix
         self.img_name = f"{self.idx:04d}.jpg"
         self.save_dir = save_dir
 
@@ -40,6 +41,9 @@ class IIIFImage:
         self.allow_truncation = config.allow_truncation
         self.sleep = config.get_sleep_time(self.url)
 
+    def img_path(self) -> Path:
+        return self.save_dir / self.img_name
+
     def get_height(self) -> Optional[int]:
         return get_size(self.resource, "height")
 
@@ -49,29 +53,97 @@ class IIIFImage:
     def sized_url(self) -> str:
         return f"{self.url}/full/{self.size}/0/default.jpg"
 
-    def save(self, re_download: bool = False) -> bool:
+    async def save(self, re_download: bool = False) -> bool:
         """Download and save the image."""
         # Check if already downloaded
-        if not re_download:
-            if self.check():
+        try:
+            if not re_download and self.check():
                 return True
 
-        self.size = self.get_max_size()
-        return self.download()
+            # TODO check if semaphore works for gallica
+            async with config.semaphore:
+                self.size = self.get_max_size()
+                return await self.download()
+        except Exception as e:
+            logger.error(f"Failed to process image {self.sized_url}", e)
+            return False
 
-    def download(self) -> bool:
+    async def download(self) -> bool:
         url = self.sized_url()
         time.sleep(self.sleep)
-        with open(self.save_dir / "info.txt", "a") as f:
-            f.write(f"{self.idx} {url}\n")
+        async with aiohttp.ClientSession() as session:
+            session.headers.update(
+                {
+                    "User-Agent": config.user_agent,
+                }
+            )
+            async with session.get(url) as response:
+                if not response.ok:
+                    logger.error(f"Failed to download {url}: {response.status}")
+                    return False
+                return await self.process_response(response)
+
+    async def process_response(self, response) -> bool:
+        """Process and save the image response using chunked downloading."""
+        content_type = response.headers.get("Content-Type", "")
+        if "image" not in content_type:
+            await write_chunks(self.save_dir / f"{self.img_name}.txt", response)
+            self.download_fail(f"⛔️ Incorrect MIME type ({content_type}) for {self.sized_url()}")
+            return False
 
         try:
-            with get_url_response(url) as response:
-                response.raw.decode_content = True
-                return self.process_response(response)
+            await write_chunks(self.img_path, response)
+            return True
         except Exception as e:
-            logger.error(f"Failed to download {url}", exception=e)
+            if self.size in ["full", f"{self.max_dim},", f",{self.max_dim}"]:
+                self.size = self.get_min_size()
+                return await self.download()
+            self.download_fail(f"⛔️ Failed to save image {self.sized_url()}", e)
             return False
+
+    # async def save_img(
+    #     self,
+    #     img: PILgrimage,
+    #     max_dim=config.max_size,
+    #     dpi=config.max_res,  # TODO use
+    #     img_format="JPEG",  # TODO add to config
+    #     load_truncated=False,
+    # ):
+    #     # truncated files are downloaded and missing bytes are replaced by a gray area
+    #     # ImageFile.LOAD_TRUNCATED_IMAGES = load_truncated
+    #
+    #     try:
+    #         if img.width > max_dim or img.height > max_dim:
+    #             img.thumbnail((max_dim, max_dim), PILgrimage.Resampling.LANCZOS)
+    #         # img.save(self.img_path, format=img_format)
+    #         await asyncio.to_thread(img.save, self.img_path, format=img_format)
+    #         return True
+    #     except (PILgrimage.UnidentifiedImageError, SyntaxError, IOError) as e:
+    #         if self.size in ["full", f"{self.max_dim},", f",{self.max_dim}"]:
+    #             self.size = self.get_min_size()
+    #             return self.download()
+    #
+    #         self.download_fail(f"⛔️ Failed to process image {self.sized_url()}", e)
+    #         return False
+    #     except OSError as e:
+    #         if not self.allow_truncation:
+    #             self.download_fail(f"⛔️ Image was truncated {self.sized_url()}", e)
+    #             return False
+    #
+    #         error = f"{e}"
+    #         if "image file is truncated" in error:
+    #             missing_bytes = int(error[25:].split(" ")[0])
+    #             if 0 < missing_bytes < 3:
+    #                 logger.warning(f"Image truncated by {missing_bytes} bytes - saving anyway")
+    #                 # return save_img(img, load_truncated=True)
+    #                 await asyncio.to_thread(img.save, self.img_path, format=img_format, load_truncated=True)
+    #                 return True
+    #
+    #         self.download_fail(f"⛔️ Failed to handle truncated image {self.sized_url()}", e)
+    #         return False
+    #     except Exception as e:
+    #         self.download_fail(f"⛔️ Failed to save image {self.sized_url()}", e)
+    #         return False
 
     def get_max_size(self) -> str:
         if self.max_dim is None:
@@ -116,12 +188,10 @@ class IIIFImage:
         Returns:
             True if the image exists and has the correct dimensions, False otherwise
         """
-        img_path = self.save_dir / self.img_name
-
-        if not os.path.exists(img_path):
+        if not os.path.exists(self.img_path):
             return False
 
-        img = PILgrimage.open(img_path)
+        img = PILgrimage.open(self.img_path)
         img_height, img_width = img.height, img.width
 
         if self.max_dim is None:
@@ -134,54 +204,11 @@ class IIIFImage:
 
         return self.min_dim is None or min(img_height, img_width) >= self.min_dim
 
-    def process_response(self, response) -> bool:
-        """Process and save image response."""
-        if "image" not in response.headers.get("Content-Type", ""):
-            logger.warning(
-                f"Incorrect MIME type ({response.headers.get('Content-Type', '')}) for {self.sized_url()}"
-            )
-            try:
-                with open(self.save_dir / f"{self.img_name}.txt", "w") as f:
-                    f.write(response.text)
-            except Exception as e:
-                logger.error(
-                    f"Failed to save response content for {self.sized_url()}",
-                    exception=e,
-                )
-
-        try:
-            img = PILgrimage.open(BytesIO(response.content))
-            try:
-                return save_img(img, self.img_name, self.save_dir)
-            except OSError as e:
-                if not self.allow_truncation:
-                    self.download_fail(f"⛔️ Image was truncated {self.sized_url()}", e)
-                    return False
-
-                try:
-                    missing_bytes = int(str(e))
-                    if 0 < missing_bytes < 3:
-                        logger.warning(f"Image truncated by {missing_bytes} bytes - saving anyway")
-                        return save_img(img, self.img_name, self.save_dir, load_truncated=True)
-                except ValueError:
-                    pass
-
-                self.download_fail(f"⛔️ Failed to handle truncated image {self.sized_url()}", e)
-                return False
-
-        except (PILgrimage.UnidentifiedImageError, SyntaxError, IOError, OSError) as e:
-            if self.size in ["full", f"{self.max_dim},", f",{self.max_dim}"]:
-                self.size = self.get_min_size()
-                return self.download()
-
-            self.download_fail(f"⛔️ Failed to process image {self.sized_url()}", e)
-            return False
-
     def download_fail(self, msg: Optional[str] = None, exc: Optional[Exception] = None) -> None:
         if not msg:
             msg = f"⛔️ Failed to download {self.idx} {self.sized_url()}"
 
-        # Log to info.txt error message
+        # TODO harmonize with json format
         with open(self.save_dir / "info.txt", "a") as f:
             f.write(f"\n{msg}\n")
             if exc:
@@ -191,4 +218,4 @@ class IIIFImage:
         logger.error(msg, exception=exc)
 
         # Append to failed downloads the image
-        logger.log_failed_download(self.save_dir / self.img_name, self.sized_url())
+        logger.log_failed_download(self.img_path, self.sized_url())

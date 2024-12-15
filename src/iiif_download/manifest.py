@@ -29,11 +29,6 @@ LICENSE = [
 class IIIFManifest:
     """Represents a IIIF manifest with its metadata and image list."""
 
-    """
-    Mapping of all image names to their URLs.
-    """
-    img_mapping: Dict[str, str] = {}
-
     def __init__(self, url: str, manifest_dir_name: Optional[Union[Path, str]] = None):
         self.url = url
         self.content: Optional[Dict[str, Any]] = None
