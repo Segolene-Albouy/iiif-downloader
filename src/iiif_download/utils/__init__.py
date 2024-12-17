@@ -8,10 +8,7 @@ from typing import Dict, List, Optional, Union
 import aiofiles
 import requests
 
-from .logger import timer
 
-
-@timer
 def check_dir(path):
     path = Path(path)
     if not path.exists():

@@ -5,17 +5,19 @@ This module handles all configurable parameters of the package,
 providing both default values and methods to override them.
 """
 
+import copy
 import os
 from asyncio import Semaphore
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 
 class Config:
     """Global configuration for the iiif_download package."""
 
-    def __init__(self):
-        self._base_dir = Path(__file__).resolve().parent.parent.parent
+    def __init__(self, **kwargs):
+        # current absolute dir where the user is executing python
+        self._base_dir = Path(os.getcwd()).resolve()
         self._img_dir = self._base_dir / "img"
         self._log_dir = self._base_dir / "log"
 
@@ -36,6 +38,10 @@ class Config:
         self._save_manifest = False
         self._user_agent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:102.0) Gecko/20100101 Firefox/102.0"
 
+        for key, value in kwargs.items():
+            # override any config attribute
+            setattr(self, f"_{key}", value)
+
         # Initialize from environment variables if present
         self._load_from_env()
 
@@ -46,15 +52,12 @@ class Config:
         """Load configuration from environment variables."""
         if path := os.getenv("IIIF_BASE_DIR"):
             self._base_dir = Path(path)
-            self._img_dir = self._base_dir / "img"
-            self._log_dir = self._base_dir / "log"
 
         if dir_name := os.getenv("IIIF_IMG_DIR"):
-            # TODO if img_dir is absolute, do not put it inside base_dir
-            self._img_dir = self._base_dir / dir_name
+            self.img_dir = dir_name
 
         if dir_name := os.getenv("IIIF_LOG_DIR"):
-            self._log_dir = self._base_dir / dir_name
+            self.log_dir = dir_name
 
         if size := os.getenv("IIIF_MAX_SIZE"):
             self._max_size = int(size)
@@ -80,26 +83,37 @@ class Config:
         if save := os.getenv("IIIF_SAVE_MANIFEST"):
             self._save_manifest = save.lower() in ("true", "1", "yes")
 
-        # TODO add is_logged, semaphore, user_agent
+        # TODO add is_logged, semaphore, user_agent, save_manifest
 
     def _create_dirs(self):
         """Create necessary directories if they don't exist."""
         self._img_dir.mkdir(parents=True, exist_ok=True)
         self._log_dir.mkdir(parents=True, exist_ok=True)
 
+    def set_path(
+        self, path: Optional[Union[str, Path]] = None, base_dir: Optional[Union[str, Path]] = None
+    ) -> Path:
+        parent_dir = Path(base_dir).resolve() if base_dir else self.base_dir
+        if not path:
+            return parent_dir
+        if not isinstance(path, (str, Path)):
+            raise TypeError("path must be Path or string")
+        path = Path(path)
+        child_dir = path if path.is_absolute() else parent_dir / path
+        child_dir.mkdir(parents=True, exist_ok=True)
+
+        # logger.magic("set_path", path, child_dir, parent_dir, base_dir, self.base_dir, self._base_dir)
+        return child_dir
+
     @property
     def base_dir(self) -> Path:
-        # TODO maybe delete ?, by default the base_dir should be
-        #  the current dir where the user executes python
         """Base directory for logs and images"""
-        return self._base_dir
+        return self._base_dir.resolve()
 
     @base_dir.setter
     def base_dir(self, path):
-        if not isinstance(path, (str, Path)):
-            raise TypeError("path must be Path or string")
-        self._base_dir = Path(path)
-        self._base_dir.mkdir(parents=True, exist_ok=True)
+        # if path is absolute, base_dir will not be taken into account
+        self._base_dir = self.set_path(path, base_dir=Path(os.getcwd()).resolve())
 
     @property
     def img_dir(self) -> Path:
@@ -108,10 +122,7 @@ class Config:
 
     @img_dir.setter
     def img_dir(self, path):
-        if not isinstance(path, (str, Path)):
-            raise TypeError("path must be Path or string")
-        self._img_dir = Path(path)
-        self._img_dir.mkdir(parents=True, exist_ok=True)
+        self._img_dir = self.set_path(path)
 
     @property
     def log_dir(self) -> Path:
@@ -120,10 +131,7 @@ class Config:
 
     @log_dir.setter
     def log_dir(self, path: Path):
-        if not isinstance(path, (str, Path)):
-            raise TypeError("path must be Path or string")
-        self._log_dir = Path(path)
-        self._log_dir.mkdir(parents=True, exist_ok=True)
+        self._log_dir = self.set_path(path)
 
     @property
     def max_size(self) -> int:
@@ -224,7 +232,7 @@ class Config:
     @user_agent.setter
     def user_agent(self, value: str):
         if not isinstance(value, str):
-            raise TypeError("User agent must be a string in the format 'Browser/V. (OS) Platform/V.'")
+            raise TypeError("User agent must be a string 'Browser/V. (OS) Platform/V.'")
         self._user_agent = value
 
     @property
@@ -259,6 +267,9 @@ class Config:
         if not isinstance(value, bool):
             raise TypeError("Allow truncation must be a boolean")
         self._allow_truncation = value
+
+    def copy(self):
+        return copy.copy(self)
 
 
 # Global configuration instance

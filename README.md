@@ -18,31 +18,37 @@ The configuration is stored in `iiif_download/config.py` and can be overriden by
 ### Inside a script
 
 ```python
-from iiif_download import IIIFDownloader, config
+from iiif_download import IIIFManifest, config, Config
 
 # Override the default configuration
 config.max_size = 2500
 config.img_dir = "custom/path/to/images"
 
-# Use downloader with global config
-downloader = IIIFDownloader()
+manifest_url = "https://example.org/manifest"
 
-# or override the global config for a specific downloader
-downloader = IIIFDownloader(
-    img_dir="path/to/dir"  # surcharge any global attribute
+# Use global config
+manifest = IIIFManifest(manifest_url)
+
+# or override the global config for a specific manifest
+manifest = IIIFManifest(
+    manifest_url,
+    # surcharge any global attribute locally
+    img_dir="path/to/dir",
+    max_size=4000
 )
 
-manifest = "https://example.org/manifest"
+# or define another config
+manifest = IIIFManifest(manifest_url, config=Config(is_logged=False))
 
 # Download images from a manifest inside img_dir/dir_name
-downloader.download_manifest(manifest, save_dir="dir_name")
+manifest.download(save_dir="dir_name")
 ```
 
 ### Command line
 
 ```bash
 # override specific variables
-export IIIF_BASE_DIR=custom/path/to/images
+export IIIF_IMG_DIR=custom/path/to/images
 export IIIF_MAX_SIZE=4000
 # or use .env
 source .env

@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="iiif-download",  # Changed to match desired pip install name
-    version="0.1.4",
+    name="iiif-download",
+    version="0.1.5",
     author="Segolene-Albouy",
     author_email="segolene.albouy@gmail.com",
     description="A Python package to download images from IIIF manifests",

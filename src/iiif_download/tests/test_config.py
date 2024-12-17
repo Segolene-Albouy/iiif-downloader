@@ -1,7 +1,7 @@
 import os
 import pytest
 from pathlib import Path
-from ...iiif_download.config import Config
+from ..config import Config
 
 
 def test_config_attribute_types():
@@ -34,8 +34,11 @@ def test_config_attribute_types():
     assert config.sleep_time["gallica"] > 0
 
     # Test path attributes
+    assert isinstance(config.base_dir, Path)
     assert isinstance(config.img_dir, Path)
     assert isinstance(config.log_dir, Path)
+
+    # TODO test semaphore, user_agent, save_manifest, is_logged
 
     with pytest.raises(ValueError):
         config.max_size = -100
@@ -57,19 +60,17 @@ def test_config_value_constraints():
 
     # Test that min_size cannot be larger than max_size
     config.max_size = 1000
-    config.min_size = 500  # Should work
+    config.min_size = 500
 
     with pytest.raises(ValueError, match="min_size cannot be larger than max_size"):
         config.min_size = 1500
 
-    # Test path setters with invalid values
     with pytest.raises(TypeError, match="path must be Path or string"):
         config.img_dir = 123
 
     with pytest.raises(TypeError, match="path must be Path or string"):
         config.log_dir = 123
 
-    # Test sleep time validation
     with pytest.raises(ValueError, match="Sleep time must be positive"):
         config.set_sleep_time(-1, "default")
 
@@ -101,15 +102,20 @@ def test_config_directory_creation():
     """Test that config creates necessary directories"""
     test_base = Path("/tmp/iiif_test")
     os.environ["IIIF_BASE_DIR"] = str(test_base)
+    os.environ["IIIF_IMG_DIR"] = "test_img"
 
     config = Config()
 
     # Test that directories were created
     assert config.img_dir.exists()
     assert config.log_dir.exists()
+    assert config.img_dir.name == "test_img"
 
     # Cleanup
     import shutil
 
     shutil.rmtree(test_base)
     del os.environ["IIIF_BASE_DIR"]
+
+
+# TODO test config copy

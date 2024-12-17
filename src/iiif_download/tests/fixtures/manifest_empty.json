@@ -1,0 +1,32 @@
+{
+    "@context": "http://iiif.io/api/presentation/2/context.json",
+    "@type": "sc:Manifest",
+    "@id": "https://example.org/manifest/v2",
+    "label": "Test Manifest v2",
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "metadata": [
+        {
+            "label": "Author",
+            "value": "Test Author"
+        },
+        {
+            "label": "Date",
+            "value": "2024"
+        }
+    ],
+    "sequences": [
+        {
+            "@type": "sc:Sequence",
+            "canvases": [
+                {
+                    "@type": "sc:Canvas",
+                    "@id": "https://example.org/canvas/p1",
+                    "label": "p. 1",
+                    "height": 2000,
+                    "width": 1500,
+                    "images": []
+                }
+            ]
+        }
+    ]
+}

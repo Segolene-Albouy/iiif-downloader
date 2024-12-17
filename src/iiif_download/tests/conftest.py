@@ -17,6 +17,7 @@ def manifest_files():
         "v2": FIXTURES_DIR / "manifest_v2.json",
         "v3": FIXTURES_DIR / "manifest_v3.json",
         "test": FIXTURES_DIR / "manifest_test.json",
+        "empty": FIXTURES_DIR / "manifest_empty.json",
     }
 
 
@@ -29,17 +30,20 @@ def mock_manifest():
             manifest_content = json.load(f)
         manifest = IIIFManifest("https://example.org/manifest")
         manifest.content = manifest_content
+        manifest.load = lambda: manifest_content
         return manifest
 
     return _create_mock
 
 
 @pytest.fixture
-def temp_download_dir():
+def tmp_base_dir():
     """Fixture providing a temporary download directory that's cleaned up after test."""
-    download_dir = Path(__file__).parent / "temp"
-    download_dir.mkdir(parents=True, exist_ok=True)
-    yield download_dir
+    base_dir = Path(__file__).parent / "temp"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    yield base_dir.resolve()
+
     # Clean up after test
-    if download_dir.exists():
-        shutil.rmtree(download_dir)
+    if base_dir.exists():
+        shutil.rmtree(base_dir)

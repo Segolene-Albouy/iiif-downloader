@@ -229,6 +229,12 @@ class Logger:
         with open(self.download_log, "a") as f:
             f.write(f"{img_path} {img_url}\n")
 
+    @staticmethod
+    def add_to_json(log_file, content, mode="w"):
+        """Add a message to the log file."""
+        with open(log_file, mode) as f:
+            json.dump(content, f)
+
 
 # Create a global logger instance
 logger = Logger(config.log_dir)

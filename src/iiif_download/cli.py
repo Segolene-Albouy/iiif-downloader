@@ -2,7 +2,8 @@
 
 import argparse
 
-from .downloader import IIIFDownloader
+from .config import config
+from .manifest import IIIFManifest
 from .utils.logger import logger
 
 
@@ -37,11 +38,13 @@ def main():
         logger.error("No valid manifest URLs found")
         return 1
 
-    downloader = IIIFDownloader(img_dir=args.img_dir)
+    config.img_dir = args.img_dir
+
+    logger.info(f"Downloading {len(manifests)} manifests inside {config.img_dir}")
 
     for url in logger.progress(manifests, desc="Processing manifests"):
         try:
-            downloader.download_manifest(url, save_dir=None)
+            IIIFManifest(url, save_dir=None).download()
         except Exception as e:
             logger.error(f"Failed to process {url}", exception=e)
 
